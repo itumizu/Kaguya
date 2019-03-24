@@ -1,0 +1,13 @@
+django-bootstrap4
+djangorestframework
+djangorestframework-jwt
+djangorestframework_camel_case
+django-cors-headers
+django-filter
+
+graphene-django
+graphene-django-optimizer
+django-graphql-jwt
+
+numpy
+markdown

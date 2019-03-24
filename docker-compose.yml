@@ -1,0 +1,44 @@
+version: '3.3'
+services:
+  django:
+    build:
+      context: .
+    env_file: .env
+    expose:
+      - "3031"
+    depends_on:
+      - pgweb
+    command: sh /run.sh
+    volumes:
+      - .:/system
+      - "./static/:/static/"
+
+  nginx:
+    restart: always
+    image: nginx
+    depends_on:
+      - django
+    ports:
+      - "80:80"
+      - "3000:3000"
+    volumes:
+      - "./nginx/:/etc/nginx/"
+      - "./static/:/system/static/"
+
+  postgres:
+    image: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - "dbdata/:/var/lib/postgresql/data"
+    env_file: .env
+
+  pgweb:
+    image: donnex/pgweb
+    links:
+      - postgres:postgres
+    ports:
+      - '8080:8080'
+      
+volumes:
+  dbdata:
