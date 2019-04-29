@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}{{query}} - {{ block.super }}{% endblock %}
+{% block content %}
+<div class="uk-navbar-container uk-navbar-transparent" uk-navbar>
+    <div class="uk-navbar-left">
+        <a class="uk-navbar-item uk-visible@s kaguya uk-text-bold uk-logo" href="/">かぐや</a>
+        <div class="uk-navbar-item">
+            <div class="uk-inline uk-box-shadow-hover-medium uk-visible@s">
+                <form action="{% url 'search:search'%}" method="GET" autocomplete="off">
+                    <a class="uk-form-icon uk-form-icon-flip" href="#" uk-icon="icon: search"></a>
+                    <input class="uk-input uk-form-width-large" type="text" name="q" value="{{query}}">
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="uk-navbar-center">
+        <a class="uk-navbar-item uk-text-center uk-hidden@s uk-text-bold uk-logo" href="/">かぐや</a>
+    </div>
+
+    <div class="uk-navbar-right">
+        <ul class="uk-navbar-nav">
+            <li>
+                <a class="uk-navbar-toggle" uk-navbar-toggle-icon href=""></a>
+                <div class="uk-navbar-dropdown">
+                    <ul class="uk-nav uk-navbar-dropdown-nav">
+                        <li><a href="">ログイン</a></li>
+                    </ul>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="uk-flex uk-flex-column uk-hidden@s">
+    <form action="{% url 'search:search'%}" method="GET" class="uk-margin" autocomplete="off">
+        <div class="uk-margin-left uk-margin-right">
+            <div class="uk-inline uk-box-shadow-hover-medium">
+                <a class="uk-form-icon uk-form-icon-flip" href="#" uk-icon="icon: search"></a>
+                <input class="uk-input uk-form-width-large" type="text" name="q" value="{{query}}">
+            </div>
+        </div>
+    </form>
+</div>
+
+<ul class="uk-tab">
+    {% if target == "haikai" %}
+        <li class="uk-margin-large-left uk-active"><a href="{% url 'search:search'%}?q={{query}}&target=haikai">俳諧</a></li>
+        <li><a href="{% url 'search:search'%}?q={{query}}&target=tanka">短歌</a></li>
+        <li><a href="{% url 'search:search'%}?q={{query}}&target=koten">古典</a></li>
+    {% elif target == "tanka" %}
+        <li class="uk-margin-large-left" ><a href="{% url 'search:search'%}?q={{query}}&target=haikai">俳諧</a></li>
+        <li class="uk-active"><a href="{% url 'search:search'%}?q={{query}}&target=tanka">短歌</a></li>
+        <li><a href="{% url 'search:search'%}?q={{query}}&target=koten">古典</a></li>
+
+    {% elif target == "koten" %}
+        <li class="uk-margin-large-left" ><a href="{% url 'search:search'%}?q={{query}}&target=haikai">俳諧</a></li>
+        <li><a href="{% url 'search:search'%}?q={{query}}&target=tanka">短歌</a></li>
+        <li class="uk-active"><a href="{% url 'search:search'%}?q={{query}}&target=koten">古典</a></li>
+    {% else %}
+        <li class="uk-margin-large-left uk-active"><a href="{% url 'search:search'%}?q={{query}}&target=haikai">俳諧</a></li>
+        <li><a href="{% url 'search:search'%}?q={{query}}&target=tanka">短歌</a></li>
+        <li><a href="{% url 'search:search'%}?q={{query}}&target=koten">古典</a></li>
+    {% endif %}
+</ul>
+
+<div class="uk-flex uk-flex-column uk-width-xxlarge">
+    {% if query %}
+        <p class="uk-margin-large-left">{{ results|length }} 件 ({{time|floatformat:5}}秒) </p>        
+    {% endif %}
+
+    {% for result in results %}
+        <div class="uk-card-medium uk-card-default uk-margin-large-left uk-margin-medium-right uk-margin-small" uk-grid>
+            <div class="uk-card-body uk-align-center uk-margin-small">
+                <p class="kaguya largeText">
+                    {{result}}
+                </p>
+                <a class="uk-label uk-align-right badgeText" href="">
+                    {{result.collection}}
+                </a>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
