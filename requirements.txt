@@ -1,3 +1,7 @@
+libsass
+django-compressor
+django-sass-processor
+
 django-bootstrap4
 djangorestframework
 djangorestframework-jwt
