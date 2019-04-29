@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}{{ block.super }}{% endblock %}
+{% block content %}
+<div class="uk-navbar-container uk-navbar-transparent" uk-navbar>
+    <div class="uk-navbar-right">
+        <ul class="uk-navbar-nav">
+            <li>
+                <a class="uk-navbar-toggle" uk-navbar-toggle-icon href=""></a>
+                <div class="uk-navbar-dropdown">
+                    <ul class="uk-nav uk-navbar-dropdown-nav">
+                        <li><a href="#">ログイン</a></li>
+                    </ul>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
+<div class="uk-flex uk-flex-column uk-position-center">
+    <h1 class="uk-text-center uk-margin topLogo uk-text-bold">かぐや</h1>
+    <form action="{% url 'search:search'%}" method="GET" class="uk-margin" autocomplete="off">
+        <!-- {% csrf_token %} -->
+        <div class="uk-margin uk-margin-left uk-margin-right">
+            <div class="uk-inline uk-box-shadow-hover-medium">
+                <a class="uk-form-icon uk-form-icon-flip" href="#" uk-icon="icon: search"></a>
+                <input class="uk-input uk-form-width-large" type="text" name="q">
+            </div>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
