@@ -1,10 +1,12 @@
-import re
 import logging
+import re
 import time
 
-from django.shortcuts import render, HttpResponse, redirect
-from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q
+from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import render, HttpResponse, redirect
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from .models import Haikai, Tanka
 
@@ -55,9 +57,26 @@ def search(request):
 
             elif target == "tanka":
                 results = Tanka.objects.filter(query)
-            
             else:
                 results = []
+            
+            pageObject = paginate_query(request, results, settings.PAGE_PER_ITEM)
 
             searchTime = time.time() - searchTime
-            return render(request, 'search/result.html', {'target': target, 'query': " ".join(words), 'time': searchTime, 'results': results})
+            return render(request, 'search/result.html', {'target': target, 'query': " ".join(words), 'time': searchTime, 'counts': len(results), 'pageObject': pageObject})
+        
+    
+def paginate_query(request, queryset, count):
+    paginator = Paginator(queryset, count)
+    page = request.GET.get('page')
+
+    try:
+        page_obj = paginator.page(page)
+
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+
+    except EmptyPage:
+        page_obj = paginator.page(paginator.num_pages)
+
+    return page_obj

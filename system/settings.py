@@ -141,6 +141,8 @@ LOGIN_REDIRECT_URL = '/'
 
 # AUTH_USER_MODEL = 'users.User'
 
+PAGE_PER_ITEM = 15
+
 import logging
 
 # For debugging
