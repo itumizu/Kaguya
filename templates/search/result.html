@@ -7,9 +7,12 @@
         <a class="uk-navbar-item uk-visible@s kaguya uk-text-bold uk-logo" href="/">かぐや</a>
         <div class="uk-navbar-item">
             <div class="uk-inline uk-box-shadow-hover-medium uk-visible@s">
-                <form action="{% url 'search:search'%}" method="GET" autocomplete="off">
-                    <a class="uk-form-icon uk-form-icon-flip" href="#" uk-icon="icon: search"></a>
+                <form name="searchForm" action="{% url 'search:search'%}" method="GET" autocomplete="off">
+                    <a class="uk-form-icon uk-form-icon-flip" href="javascript:searchForm.submit()" uk-icon="icon: search"></a>
                     <input class="uk-input uk-form-width-large" type="text" name="q" value="{{query}}">
+                    {% if target%}
+                        <input type="hidden" name="target" value="{{target}}">
+                    {% endif %}
                 </form>
             </div>
         </div>
@@ -39,6 +42,9 @@
             <div class="uk-inline uk-box-shadow-hover-medium">
                 <a class="uk-form-icon uk-form-icon-flip" href="#" uk-icon="icon: search"></a>
                 <input class="uk-input uk-form-width-large" type="text" name="q" value="{{query}}">
+                {% if target%}
+                    <input type="hidden" name="target" value="{{target}}">
+                {% endif %}
             </div>
         </div>
     </form>
