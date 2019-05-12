@@ -74,27 +74,23 @@
     {% endif %}
 </ul>
 
-<div class="uk-flex uk-flex-column uk-width-xxlarge">
+<div class="uk-flex uk-flex-column uk-width-1-1">
     {% if query %}
         {% if pageObject.number > 1%}
             <p class="uk-margin-large-left">{{ counts }} 件中 {{pageObject.number}}ページ目 ({{time|floatformat:5}}秒)</p>
-
         {% else %}
             <p class="uk-margin-large-left">{{ counts }} 件 ({{time|floatformat:5}}秒)</p>
-            
         {% endif %}   
     {% endif %}
 
     {% for result in pageObject %}
-        <div class="uk-card-medium uk-card-default uk-margin-large-left uk-margin-medium-right uk-margin-small" uk-grid>
-            <div class="uk-card-body uk-align-center uk-margin-small">
-                <p class="kaguya largeText">
-                    {{result}}
-                </p>
-                <a class="uk-label uk-align-right badgeText" href="">
-                    {{result.collection}}
-                </a>
-            </div>
+        <div class="uk-card uk-card-default uk-card-body uk-align-center uk-margin-medium-left uk-margin-medium-right" uk-grid>
+            <p class="kaguya largeText"> 
+                {{ result }}
+            </p>
+            <a class="uk-label uk-align-right badgeText" href="">
+                {{result.collection}}
+            </a>
         </div>
     {% endfor %}
     
