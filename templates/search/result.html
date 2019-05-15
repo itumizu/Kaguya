@@ -84,13 +84,25 @@
     {% endif %}
 
     {% for result in pageObject %}
-        <div class="uk-card uk-card-default uk-card-body uk-align-center uk-margin-medium-left uk-margin-medium-right" uk-grid>
+        <div class="uk-card uk-card-default uk-card-body uk-align-center uk-margin-medium-left uk-margin-medium-right uk-margin-remove-adjacent" uk-grid>
             <p class="kaguya largeText"> 
                 {{ result }}
             </p>
-            <a class="uk-label uk-align-right badgeText" href="">
-                {{result.collection}}
-            </a>
+            <div class="uk-flex uk-align-right">
+                {% if result.author %}
+                <a class="uk-text-break badgeText uk-margin-small-right">
+                    {{result.author}}
+                </a>
+                {% endif %}
+                <a class="uk-text-break badgeText">
+                    {{result.collection.name}}
+                </a>
+                {% if result.collection.parent %}
+                <a class="uk-text-break badgeText uk-margin-small-left">
+                    {{result.collection.parent}}
+                </a>
+                {% endif %}
+            </div>
         </div>
     {% endfor %}
     
