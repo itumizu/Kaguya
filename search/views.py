@@ -7,11 +7,14 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, HttpResponse, redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.contrib.auth.decorators import login_required
 
-from .models import Haikai, Tanka
+from .models import Collection, Author, Haikai, Tanka
+
 
 def index(request):
     return render(request, 'search/index.html', {})
+
 
 @csrf_exempt
 def search(request):
@@ -20,18 +23,21 @@ def search(request):
     
     if not "q" in request.GET:
         return render(request, 'search/index.html', {})
+
     else:
         if "target" in request.GET:
             target = request.GET['target']
         else:
             target = ""
 
-        if not request.GET['q']:
+        query = re.sub(r"\s+", " ", re.sub(r'^\s+|\s+$', '', request.GET['q']))
+
+        if not query:
             searchTime = 0
             return render(request, 'search/result.html', {'target': target, 'query': "", 'time': searchTime, 'results': []})
-        
+
         else:
-            words = re.split(r"\s", re.sub(r"\s+", " ", request.GET['q']))
+            words = re.split(r"\s", query)
 
             # 俳諧
             if target == "haikai" or not target:
@@ -40,18 +46,16 @@ def search(request):
             #短歌
             elif target == "tanka":
                 queries = [Q(firstPart__contains=word) | Q(secondPart__contains=word) | Q(thirdPart__contains=word) | Q(fourthPart__contains=word) | Q(lastPart__contains=word) | Q(firstPartKana__contains=word) | Q(secondPartKana__contains=word) | Q(thirdPartKana__contains=word) | Q(fourthPartKana__contains=word) | Q(lastPartKana__contains=word) for word in words] 
-                
-
+            
             #古典(予定)
             else:
                 searchTime = 0
                 return render(request, 'search/result.html', {'target': target, 'query': " ".join(words), 'time': searchTime, 'results': []})                
 
-
             query = queries.pop()
             for item in queries:
-                query |= item
-
+                (query) &= item
+            
             if target == "haikai" or not target:
                 results = Haikai.objects.filter(query)
 
@@ -60,12 +64,12 @@ def search(request):
             else:
                 results = []
             
-            pageObject = paginate_query(request, results, settings.PAGE_PER_ITEM)
+            pageObject, paginator = paginate_query(request, results, settings.PAGE_PER_ITEM)
 
             searchTime = time.time() - searchTime
-            return render(request, 'search/result.html', {'target': target, 'query': " ".join(words), 'time': searchTime, 'counts': len(results), 'pageObject': pageObject})
+            return render(request, 'search/result.html', {'target': target, 'query': " ".join(words), 'time': searchTime, 'counts': len(results), 'pageObject': pageObject, 'paginator': paginator})
         
-    
+
 def paginate_query(request, queryset, count):
     paginator = Paginator(queryset, count)
     page = request.GET.get('page')
@@ -79,4 +83,4 @@ def paginate_query(request, queryset, count):
     except EmptyPage:
         page_obj = paginator.page(paginator.num_pages)
 
-    return page_obj
+    return page_obj, paginator

@@ -1,51 +1,33 @@
-<ul class="uk-pagination uk-flex-left uk-margin-large-left uk-visible@s">
-    {% if pageObject.has_previous %}
-        <li><a class="page-link text-primary d-inline-block" href="?q={{query}}&target={{target}}&page={{ pageObject.previous_page_number }}"><span uk-pagination-previous></span></a></li>
-    {% else %}
-        <li class="disabled"><div class=" disabled" href="#"><span uk-pagination-previous></span></div></li>
-    {% endif %}
+{% if pageObject.paginator.page_range|length > 1 %}
+    {% load proper_paginate %}
 
-    {% for link_page in pageObject.paginator.page_range %}
-        {% if link_page %}
-            {% if link_page == pageObject.number %}
-                <li class="uk-active"><div class="uk-active" href="#">{{ link_page }}</div></li>
-            {% else %}
-                <li><a class="" href="?q={{query}}&target={{target}}&page={{ link_page }}">{{ link_page }}</a></li>
-            {% endif %}
-        {% else %}
-            <li class="disabled"><a class="" href="#"><span>...</span></a></li>
+    <ul class="uk-pagination uk-flex-center">
+        {% if pageObject.number != 1 %}
+            <li><a class="page-link" href="?q={{query}}&target={{target}}&page=1">1</a></li>
         {% endif %}
-    {% endfor %}
 
-    {% if pageObject.has_next %}
-        <li><a class="" href="?q={{query}}&target={{target}}&page={{ pageObject.next_page_number }}"><span uk-pagination-next></span></a></li>
-    {% else %}
-        <li class="disabled"><div class="disabled" href="#"><span uk-pagination-next></span></div></li>
-    {% endif %}
-</ul>
-
-<ul class="uk-pagination uk-flex-center uk-hidden@s">
-    {% if pageObject.has_previous %}
-        <li><a class="page-link text-primary d-inline-block" href="?q={{query}}&target={{target}}&page={{ pageObject.previous_page_number }}"><span uk-pagination-previous></span></a></li>
-    {% else %}
-        <li class="disabled"><div class=" disabled" href="#"><span uk-pagination-previous></span></div></li>
-    {% endif %}
-
-    {% for link_page in pageObject.paginator.page_range %}
-        {% if link_page %}
-            {% if link_page == pageObject.number %}
-                <li class="uk-active"><div class="uk-active" href="#">{{ link_page }}</div></li>
-            {% else %}
-                <li><a class="" href="?q={{query}}&target={{target}}&page={{ link_page }}">{{ link_page }}</a></li>
-            {% endif %}
+        {% if pageObject.has_previous %}
+            <li><a class="page-link" href="?q={{query}}&target={{target}}&page={{pageObject.previous_page_number}}">&lt;</a></li>
         {% else %}
-            <li class="disabled"><a class="" href="#"><span>...</span></a></li>
+            <li class="disabled"><span>&lt;</span></li>
         {% endif %}
-    {% endfor %}
 
-    {% if pageObject.has_next %}
-        <li><a class="" href="?q={{query}}&target={{target}}&page={{ pageObject.next_page_number }}"><span uk-pagination-next></span></a></li>
-    {% else %}
-        <li class="disabled"><div class="disabled" href="#"><span uk-pagination-next></span></div></li>
-    {% endif %}
-</ul>
+        {% for i in paginator|proper_paginate:pageObject.number %}
+            {% if pageObject.number == i %}
+                <li class="uk-active"><span>{{ i }} <span class="sr-only"></span></span></li>
+            {% else %}
+                <li><a class="page-link" href="?q={{query}}&target={{target}}&page={{i}}">{{ i }}</a></li>
+            {% endif %}
+        {% endfor %}
+
+        {% if pageObject.has_next %}
+            <li><a class="page-link" href="?q={{query}}&target={{target}}&page={{pageObject.next_page_number}}">&gt;</a></li>
+        {% else %}
+            <li class="disabled"><span>&gt;</span></li>
+        {% endif %}
+
+        {% if pageObject.number != paginator.num_pages %}
+            <li><a class="page-link" href="?q={{query}}&target={{target}}&page={{paginator.num_pages}}">{{paginator.num_pages}}</a></li>
+        {% endif %}
+    </ul>
+{% endif %}
