@@ -1,3 +1,4 @@
+{% load markdown %}
 {% extends "base.html" %}
 {% block title %}{{query}} - {{ block.super }}{% endblock %}
 {% block content %}
@@ -17,7 +18,7 @@
             </div>
         </div>
     </div>
-
+    
     <div class="uk-navbar-center">
         <a class="uk-navbar-item uk-text-center uk-hidden@s uk-text-bold uk-logo" href="/">かぐや</a>
     </div>
@@ -28,7 +29,11 @@
                 <a class="uk-navbar-toggle" uk-navbar-toggle-icon href=""></a>
                 <div class="uk-navbar-dropdown">
                     <ul class="uk-nav uk-navbar-dropdown-nav">
-                        <li><a href="">ログイン</a></li>
+                        {% if user.is_authenticated %}
+                            <li><a href="{% url 'logout' %}">ログアウト</a></li>
+                        {% else %}
+                            <li><a href="{% url 'login' %}">ログイン</a></li>
+                        {% endif %}
                     </ul>
                 </div>
             </li>
@@ -85,8 +90,14 @@
 
     {% for result in pageObject %}
         <div class="uk-card uk-card-default uk-card-body uk-align-center uk-margin-medium-left uk-margin-medium-right uk-margin-remove-adjacent" uk-grid>
-            <p class="kaguya largeText"> 
-                {{ result }}
+            <p class="kaguya largeText">
+                {% if target == "koten" %}
+                    <div class="kaguya largeText">
+                        {{ result.text |truncatechars:45 |markdown2html |safe }}
+                    </div>
+                {% else %}
+                    {{ result }}
+                {% endif %}
             </p>
             <div class="uk-flex uk-align-right">
                 {% if result.author %}
