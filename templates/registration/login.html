@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="uk-section uk-flex uk-flex-middle" uk-height-viewport>
+	<div class="uk-width-1-1">
+		<div class="uk-container">
+			<div class="uk-grid-margin uk-grid uk-grid-stack" uk-grid>
+				<div class="uk-width-1-1@m">
+					<div class="uk-margin uk-width-large uk-margin-auto">
+						<h1 class="kaguya uk-text-bold uk-text-center loginLogo">かぐや</h1>
+						<form method="post" action="{% url 'login' %}">
+                            {% csrf_token %}
+							<div class="uk-margin">
+                                <div class="uk-form-label">
+                                    ユーザー名
+                                </div>
+								<div class="uk-inline uk-width-1-1">
+									<span class="uk-form-icon" uk-icon="icon: user"></span>
+									<input class="uk-input uk-form-medium"name="username" type="text">
+								</div>
+							</div>
+							<div class="uk-margin">
+                                <div class="uk-form-label">
+                                    パスワード
+                                </div>
+								<div class="uk-inline uk-width-1-1">
+									<span class="uk-form-icon" uk-icon="icon: lock"></span>
+									<input name="password" class="uk-input uk-form-medium" type="password">	
+								</div>
+							</div>
+                            <input type="hidden" name="next" value="{{ next }}" />
+							<div class="uk-margin">
+								<input type="submit" class="uk-button uk-button-large uk-width-1-1 login" value="ログイン"></input>
+							</div>
+						</form>
+                        {% if form.errors %}
+                            <p class="uk-text-center">ユーザー名またはパスワードが間違っています。</p>
+                        {% endif %}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+{% endblock %}

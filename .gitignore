@@ -102,3 +102,8 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+media/
+
+static/css/style.css
+static/css/style.css.map
+data.csv

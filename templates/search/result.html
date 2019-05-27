@@ -1,0 +1,125 @@
+{% load markdown %}
+{% extends "base.html" %}
+{% block title %}{{query}} - {{ block.super }}{% endblock %}
+{% block content %}
+
+<div class="uk-navbar-container uk-navbar-transparent" uk-navbar>
+    <div class="uk-navbar-left">
+        <a class="uk-navbar-item uk-visible@s kaguya uk-text-bold uk-logo" href="/">かぐや</a>
+        <div class="uk-navbar-item">
+            <div class="uk-inline uk-box-shadow-hover-medium uk-visible@s">
+                <form name="searchForm" action="{% url 'search:search'%}" method="GET" autocomplete="off">
+                    <a class="uk-form-icon uk-form-icon-flip" href="javascript:searchForm.submit()" uk-icon="icon: search"></a>
+                    <input class="uk-input uk-form-width-large" type="text" name="q" value="{{query}}">
+                    {% if target%}
+                        <input type="hidden" name="target" value="{{target}}">
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="uk-navbar-center">
+        <a class="uk-navbar-item uk-text-center uk-hidden@s uk-text-bold uk-logo" href="/">かぐや</a>
+    </div>
+
+    <div class="uk-navbar-right">
+        <ul class="uk-navbar-nav">
+            <li>
+                <a class="uk-navbar-toggle" uk-navbar-toggle-icon href=""></a>
+                <div class="uk-navbar-dropdown">
+                    <ul class="uk-nav uk-navbar-dropdown-nav">
+                        {% if user.is_authenticated %}
+                            <li><a href="{% url 'logout' %}">ログアウト</a></li>
+                        {% else %}
+                            <li><a href="{% url 'login' %}">ログイン</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="uk-flex uk-flex-column uk-hidden@s">
+    <form action="{% url 'search:search'%}" method="GET" class="uk-margin" autocomplete="off">
+        <div class="uk-margin-left uk-margin-right">
+            <div class="uk-inline uk-box-shadow-hover-medium">
+                <a class="uk-form-icon uk-form-icon-flip" href="#" uk-icon="icon: search"></a>
+                <input class="uk-input uk-form-width-large" type="text" name="q" value="{{query}}">
+                {% if target%}
+                    <input type="hidden" name="target" value="{{target}}">
+                {% endif %}
+            </div>
+        </div>
+    </form>
+</div>
+
+<ul class="uk-tab">
+    {% if target == "haikai" %}
+        <li class="uk-margin-large-left uk-active"><a href="{% url 'search:search'%}?q={{query}}&target=haikai">俳諧</a></li>
+        <li><a href="{% url 'search:search'%}?q={{query}}&target=tanka">短歌</a></li>
+        <li><a href="{% url 'search:search'%}?q={{query}}&target=koten">古典</a></li>
+
+    {% elif target == "tanka" %}
+        <li class="uk-margin-large-left" ><a href="{% url 'search:search'%}?q={{query}}&target=haikai">俳諧</a></li>
+        <li class="uk-active"><a href="{% url 'search:search'%}?q={{query}}&target=tanka">短歌</a></li>
+        <li><a href="{% url 'search:search'%}?q={{query}}&target=koten">古典</a></li>
+
+    {% elif target == "koten" %}
+        <li class="uk-margin-large-left" ><a href="{% url 'search:search'%}?q={{query}}&target=haikai">俳諧</a></li>
+        <li><a href="{% url 'search:search'%}?q={{query}}&target=tanka">短歌</a></li>
+        <li class="uk-active"><a href="{% url 'search:search'%}?q={{query}}&target=koten">古典</a></li>
+
+    {% else %}
+        <li class="uk-margin-large-left uk-active"><a href="{% url 'search:search'%}?q={{query}}&target=haikai">俳諧</a></li>
+        <li><a href="{% url 'search:search'%}?q={{query}}&target=tanka">短歌</a></li>
+        <li><a href="{% url 'search:search'%}?q={{query}}&target=koten">古典</a></li>
+
+    {% endif %}
+</ul>
+
+<div class="uk-flex uk-flex-column uk-width-1-1">
+    {% if query %}
+        {% if pageObject.number > 1%}
+            <p class="uk-margin-large-left">{{ counts }} 件中 {{pageObject.number}}ページ目 ({{time|floatformat:5}}秒)</p>
+        {% else %}
+            <p class="uk-margin-large-left">{{ counts }} 件 ({{time|floatformat:5}}秒)</p>
+        {% endif %}   
+    {% endif %}
+
+    {% for result in pageObject %}
+        <div class="uk-card uk-card-default uk-card-body uk-align-center uk-margin-medium-left uk-margin-medium-right uk-margin-remove-adjacent" uk-grid>
+            <p class="kaguya largeText">
+                {% if target == "koten" %}
+                    <div class="kaguya largeText">
+                        {{ result.text |truncatechars:45 |markdown2html |safe }}
+                    </div>
+                {% else %}
+                    {{ result }}
+                {% endif %}
+            </p>
+            <div class="uk-flex uk-align-right">
+                {% if result.author %}
+                <a class="uk-text-break badgeText uk-margin-small-right">
+                    {{result.author}}
+                </a>
+                {% endif %}
+                <a class="uk-text-break badgeText">
+                    {{result.collection.name}}
+                </a>
+                {% if result.collection.parent %}
+                <a class="uk-text-break badgeText uk-margin-small-left">
+                    {{result.collection.parent}}
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+    
+    {% if counts %}
+        {% include 'pagination.html' %}
+    {% endif %}
+</div>
+
+{% endblock %}
