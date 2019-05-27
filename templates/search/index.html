@@ -8,7 +8,11 @@
                 <a class="uk-navbar-toggle" uk-navbar-toggle-icon href=""></a>
                 <div class="uk-navbar-dropdown">
                     <ul class="uk-nav uk-navbar-dropdown-nav">
-                        <li><a href="#">ログイン</a></li>
+                        {% if user.is_authenticated %}
+                            <li><a href="{% url 'logout' %}">ログアウト</a></li>
+                        {% else %}
+                            <li><a href="{% url 'login' %}">ログイン</a></li>
+                        {% endif %}
                     </ul>
                 </div>
             </li>

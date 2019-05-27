@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'sass_processor',
     'debug_toolbar',
     'markdownx',
-    'maintenancemode',
     'axes',
     'search'
 ]
@@ -60,7 +59,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'request.middleware.RequestMiddleware',
-    'maintenancemode.middleware.MaintenanceModeMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'axes.middleware.AxesMiddleware',
 ]
@@ -137,7 +135,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
-# STATIC_ROOT = os.path.join(BASE_DIR, "static/")
+# STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
@@ -156,6 +154,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
 
 # AUTH_USER_MODEL = 'users.User'
 
@@ -184,12 +183,13 @@ SASS_PRECISION = 8
 SASS_OUTPUT_STYLE = 'compact'
 SASS_TEMPLATE_EXTS = ['.html', '.haml']
 SASS_PROCESSOR_ROOT = os.path.join(BASE_DIR, "static")
+COMPRESS_ROOT = os.path.join(BASE_DIR, "static", "css")
+
+AXES_LOCKOUT_TEMPLATE = 'locked.html'
 
 AXES_META_PRECEDENCE_ORDER = (
     'HTTP_X_FORWARDED_FOR',
 )
-
-MAINTENANCE_MODE_IGNORE_ADMIN_SITE = True
 
 # if you use django.core.cache.backends.locmem.LocMemCache
 # CACHES = {

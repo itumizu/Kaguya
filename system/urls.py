@@ -29,8 +29,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('search/', include('search.urls')),
     path('markdownx/', include('markdownx.urls')),
+    path('accounts/', include('django.contrib.auth.urls')),
     path('robots.txt', lambda r: HttpResponse("User-agent: *\nDisallow: /", content_type="text/plain")),
-    path('maintenance-mode/', include('maintenance_mode.urls')),
 ]
 
 urlpatterns += static(
