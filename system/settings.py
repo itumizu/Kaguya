@@ -37,8 +37,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'request',
     'sass_processor',
+    'debug_toolbar',
+    'markdownx',
+    'maintenancemode',
+    'axes',
     'search'
+]
+
+AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesBackend',
+    'django.contrib.auth.backends.ModelBackend',
 ]
 
 MIDDLEWARE = [
@@ -49,6 +59,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'request.middleware.RequestMiddleware',
+    'maintenancemode.middleware.MaintenanceModeMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'axes.middleware.AxesMiddleware',
 ]
 
 ROOT_URLCONF = 'system.urls'
@@ -79,7 +93,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'postgres', 
-        'USER': 'postgres',  
+        'USER': os.environ['POSTGRES_USER'],  
         'PASSWORD': os.environ['POSTGRES_PASSWORD'],
         'HOST': 'postgres',  
         'PORT': 5432,
@@ -123,7 +137,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
-# STATIC_ROOT = os.path.join(BASE_DIR, "static")
+# STATIC_ROOT = os.path.join(BASE_DIR, "static/")
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
@@ -137,11 +151,15 @@ STATICFILES_FINDERS = [
 
 SASS_PROCESSOR_ROOT = os.path.join(BASE_DIR,"temp_files")
 
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 LOGIN_REDIRECT_URL = '/'
 
 # AUTH_USER_MODEL = 'users.User'
 
-PAGE_PER_ITEM = 15
+PAGE_PER_ITEM = 50
 
 import logging
 
@@ -155,7 +173,7 @@ else:
     logging.basicConfig(
         level=logging.DEBUG,
         format='%(asctime)s %(levelname)s %(message)s',
-        filename='/logfile.log',
+        filename='./logfile.log',
         filemode='a'
     )
 
@@ -166,3 +184,20 @@ SASS_PRECISION = 8
 SASS_OUTPUT_STYLE = 'compact'
 SASS_TEMPLATE_EXTS = ['.html', '.haml']
 SASS_PROCESSOR_ROOT = os.path.join(BASE_DIR, "static")
+
+AXES_META_PRECEDENCE_ORDER = (
+    'HTTP_X_FORWARDED_FOR',
+)
+
+MAINTENANCE_MODE_IGNORE_ADMIN_SITE = True
+
+# if you use django.core.cache.backends.locmem.LocMemCache
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+#     },
+#     'axes_cache': {
+#         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+#     }
+# }
+# AXES_CACHE = 'axes_cache'
