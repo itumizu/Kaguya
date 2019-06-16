@@ -104,6 +104,9 @@ venv.bak/
 .mypy_cache/
 media/
 
+nginx/log
+nginx/cert
+
 static/css/style.css
 static/css/style.css.map
 data.csv
