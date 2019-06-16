@@ -2,7 +2,6 @@ libsass
 django-compressor
 django-sass-processor
 
-django-request
 django-debug-toolbar
 django-maintenancemode
 django-axes
