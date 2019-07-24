@@ -1,0 +1,2 @@
+cd 'kaguya'
+yarn start
