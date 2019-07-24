@@ -21,6 +21,10 @@ from django.shortcuts import HttpResponse
 from django.urls import path, include
 from search.views import index as searchIndex
 
+from graphene_django.views import GraphQLView
+from django.views.decorators.csrf import csrf_exempt
+from api import urls as apiUrls
+
 admin.site.site_title = 'かぐや'
 admin.site.site_header = 'かぐや'
 
@@ -31,6 +35,7 @@ urlpatterns = [
     path('markdownx/', include('markdownx.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
     path('robots.txt', lambda r: HttpResponse("User-agent: *\nDisallow: /", content_type="text/plain")),
+    path('api/', include(apiUrls)),
 ]
 
 urlpatterns += static(
@@ -42,4 +47,5 @@ if settings.DEBUG:
     import debug_toolbar
     urlpatterns = [
         path('__debug__/', include(debug_toolbar.urls)),
+        path('graphql_debug/', csrf_exempt(GraphQLView.as_view(graphiql=True)))
     ] + urlpatterns
