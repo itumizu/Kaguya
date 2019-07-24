@@ -7,7 +7,7 @@ from django.core.mail import send_mail
 import uuid as uuid_lib
 
 class User(AbstractBaseUser, PermissionsMixin):
-    uuid = models.UUIDField(default=uuid_lib.uuid4,
+    id = models.UUIDField(default=uuid_lib.uuid4,
                             primary_key=True, editable=False)
 
     username_validator = UnicodeUsernameValidator()
@@ -24,7 +24,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         },
     )
     
-    full_name = models.CharField(_('氏名'), max_length=150, blank=True)
+    displayName = models.CharField(_('表示名'), max_length=150, blank=True)
     email = models.EmailField(_('email address'), blank=True)
     
     is_staff = models.BooleanField(
@@ -63,7 +63,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     # 既存メソッドの変更
     def get_full_name(self):
-        return self.full_name
+        return self.displayName
 
     def get_short_name(self):
-        return self.full_name
+        return self.displayName
