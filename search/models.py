@@ -4,8 +4,11 @@ from markdownx.models import MarkdownxField
 
 class Collection(models.Model):
     name = models.CharField(verbose_name='作品名', max_length=100, blank=False, null=False)
-    parent = models.ForeignKey("self", verbose_name='親作品名', blank=True, null=True, on_delete=models.PROTECT)
+    parent = models.ForeignKey("self", verbose_name='親作品名', blank=True, null=True, on_delete=models.PROTECT, related_name='childCollection')
     description =  MarkdownxField('説明', help_text='Markdown形式で記述できます。', default="", blank=True, null=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)    
     
     def __str__(self):
         if self.parent:
@@ -21,7 +24,9 @@ class Collection(models.Model):
 class Author(models.Model):
     name = models.CharField(verbose_name='作者名', max_length=100, unique=True, blank=False, null=False)
     description =  MarkdownxField('説明', help_text='Markdown形式で記述できます。', default="", blank=True, null=True)
-
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
         return self.name
 
@@ -33,7 +38,10 @@ class Year(models.Model):
     jpnYear = models.CharField(verbose_name='和暦', max_length=100, unique=True, blank=False, null=False)
 
     adYear = models.IntegerField(verbose_name='西暦', validators=[MinValueValidator(1)], unique=True, blank=True, null=True)
-
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
     def __str__(self):
         if self.adYear:
             return self.jpnYear + " (" + self.adYear + ")"
@@ -72,6 +80,9 @@ class Haikai(models.Model):
     author = models.ForeignKey(Author, verbose_name='作者名', blank=True, null=True, on_delete=models.PROTECT)
     collection = models.ForeignKey(Collection, verbose_name='所蔵作品', on_delete=models.PROTECT)
     year = models.ForeignKey(Year, verbose_name='発表年', blank=True, null=True, on_delete=models.PROTECT)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     def __str__(self):
         if not self.firstPart:
@@ -123,6 +134,9 @@ class Tanka(models.Model):
     author = models.ForeignKey(Author, verbose_name='作者名', blank=True, null=True, on_delete=models.PROTECT)
     collection = models.ForeignKey(Collection, verbose_name='所蔵作品', on_delete=models.PROTECT)    
     year = models.ForeignKey(Year, verbose_name='発表年', blank=True, null=True, on_delete=models.PROTECT)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         if not self.firstPart:
@@ -146,6 +160,9 @@ class Koten(models.Model):
     author = models.ForeignKey(Author, verbose_name='作者名', blank=True, null=True, on_delete=models.PROTECT)
     collection = models.ForeignKey(Collection, verbose_name='所蔵作品', on_delete=models.PROTECT)
     year = models.ForeignKey(Year, verbose_name='発表年', blank=True, null=True, on_delete=models.PROTECT)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.text
