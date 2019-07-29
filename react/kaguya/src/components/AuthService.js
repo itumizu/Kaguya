@@ -1,28 +1,34 @@
 import decode from 'jwt-decode';
+import axios from 'axios';
+
 export default class AuthService {
     constructor(domain) {
         this.domain = domain || 'http://localhost'
-        this.fetch = this.fetch.bind(this)
+        this.post = this.post.bind(this)
         this.login = this.login.bind(this)
     }
 
     login(username, password) {
-        return fetch(`${this.domain}/api/v1/auth/`, {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
+        return axios.post(`${this.domain}/api/v1/auth/`, 
+            JSON.stringify({
                 username,
                 password
-            })
-        }).then(res => res.json())
+            }),
+            {
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+            }
+        )
         .then(res => {
-            
-            this.setToken(res)
+            // console.log(res)
+            this.setToken(res.data)
             return Promise.resolve(res);
         })
+        .catch((error) => {
+            console.log(error)
+        });
     }
 
     loggedIn() {
@@ -32,11 +38,18 @@ export default class AuthService {
     }
 
     isTokenVerified(token) {
+        if (token === undefined){
+            if (this.refreshToken(this.getRefreshToken())){
+                token = this.getToken()
+            }
+            else{
+                return false
+            }
+        }
+
         var decoded = decode(token);
         let exp = decoded.exp;
         let nowTime = Math.round((new Date()).getTime() / 1000);
-        console.log("NOW:", Math.round((new Date()).getTime() / 1000))
-        console.log("EXP:", decoded.exp)
 
         if (exp > nowTime && Math.abs(exp - nowTime) <= 60){
             console.log("更新が近いから更新するよ")
@@ -53,7 +66,6 @@ export default class AuthService {
                 }
             }
         }
-        // console.log("NOW"decoded)
 
         return fetch(`${this.domain}/api/v1/auth/verify/`, {
             method: 'POST',
@@ -106,12 +118,14 @@ export default class AuthService {
         })
         .then(res => res.json())
         .then(res => {
-            if (res){
+            if (res.ok){
                 localStorage.setItem('accessToken', res.access)
                 localStorage.setItem('refreshToken', token)
                 return true
             }
             else{
+                localStorage.removeItem('refreshToken');        
+                localStorage.removeItem('accessToken');
                 return false
             }
 
@@ -121,18 +135,47 @@ export default class AuthService {
     getToken() {
         return localStorage.getItem('accessToken');
     }
+
     getRefreshToken() {
         return localStorage.getItem('refreshToken');
     }
+
     logout() {
         localStorage.removeItem('refreshToken');        
         localStorage.removeItem('accessToken');
         return true
     }
+
     getProfile() {
         return decode(this.getToken());
     }
-    fetch(url, options, auth=false) {
+
+    post(url, options, data, auth=false) {
+        var headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+
+        if(auth === false){
+            if (this.loggedIn()) {
+                headers['Authorization'] = 'Bearer ' + this.getToken()
+            }
+        }
+
+        return axios.post(url, {
+            headers,
+            ...options
+        }, data)
+        .then((response) => {
+            console.log(response)
+            return response.data
+        })
+        .catch((e) => {
+            console.log(e)
+            return e
+        })
+    }
+    put(url, options, data, auth=false) {
         const headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
@@ -144,21 +187,42 @@ export default class AuthService {
             }
         }
 
-        return fetch(url, {
+        return axios.put(url, data, {
             headers,
             ...options
         })
-            .then(this._checkStatus)
-            .then(response => response.json())
+        .then((response) => {
+            console.log(response)
+            return response.data
+        })
+        .catch((e) => {
+            console.log(e)
+            return e
+        })
     }
-
-    _checkStatus(response) {
-        if (response.status >= 200 && response.status < 300) {
-            return response
-        } else {
-            var error = new Error(response.statusText)
-            error.response = response
-            throw error
+    get(url, options, data, auth=false) {
+        const headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
         }
+
+        if(auth === false){
+            if (this.loggedIn()) {
+                headers['Authorization'] = 'Bearer ' + this.getToken()
+            }
+        }
+
+        return axios.get(url, {
+            headers,
+            ...options
+        }, data)
+        .then((response) => {
+            console.log(response)
+            return response.data
+        })
+        .catch((e) => {
+            console.log(e)
+            return e
+        })
     }
 }
