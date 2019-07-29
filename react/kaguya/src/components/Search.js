@@ -1,25 +1,55 @@
 import React, { Component } from 'react';
 import withAuth from '../withAuth'
 import AuthService from './AuthService';
-
+import ReactModal from "react-modal";
 import { withRouter, BrowserRouter, Route, Link } from 'react-router-dom';
 import '../css/style.sass';
 import queryString from 'query-string';
+import axios from 'axios';
+import AsyncSelect from 'react-select/async';
+
 
 class Search extends Component {
     constructor(props){
         super(props);
 
+        var targets = ['haikai', 'tanka', 'koten']
+
         this.state = {
             q: "",
+            target: "haikai",
             page: null,
             list: [""],
             paginationList: null,
-            count: null
+            count: null,
+            
+            // edit
+            id: "",
+            firstPart: "",
+            secondPart: "",
+            thirdPart: "",
+            fourthPart: "",
+            lastPart: "",
+            firstPartKana: "",
+            secondPartKana: "",
+            thirdPartKana: "",
+            fourthPartKana: "",
+            lastPartKana: "",
+            description: "",
+            author: "",
+            collection: "",
+            year: "",
+            text: "",
+            number: "",
+            modal: false
         };
 
         this.handleChange = this.handleChange.bind(this);
         this.handleFormSubmit = this.handleFormSubmit.bind(this);
+        this.handleEditFormSubmit = this.handleEditFormSubmit.bind(this);
+        this.getSelectAuthor = this.getSelectAuthor.bind(this);
+        this.getSelectCollection = this.getSelectCollection.bind(this);
+
         this.Auth = new AuthService();
 
         if (props.history.location.search){
@@ -34,8 +64,18 @@ class Search extends Component {
                     this.state['page'] = q['page']     
                 }
             }
+
+            if ('target' in q){
+                if (q['target'] !== "" && q['target'] in targets){
+                    this.state['target'] = q['target']
+                }
+                else{
+                    this.state['target'] = "haikai";
+                }
+            }
+
             if (this.state.q !== ""){
-                this.search(this.state.q, this.state.page)
+                this.search(this.state.q, this.state.page, this.state.target)
             }
         }
 
@@ -52,21 +92,51 @@ class Search extends Component {
                         this.state['page'] = 1
                     }
                 }
+                if ('target' in q){
+                    if (q['target'] !== "" && q['target'] in targets){
+                        this.state['target'] = q['target']
+                    }
+                    else{
+                        this.state['target'] = "haikai";
+                    }
+                }
             }
             if (this.state.q !== ""){
-                this.search(this.state.q, this.state.page)
+                this.search(this.state.q, this.state.page, this.state.target)
             }
             else{
-                this.state = {
+                this.setState({
                     q: "",
+                    target: "haikai",
                     page: null,
-                    list: [],
+                    list: [""],
                     paginationList: null,
-                    count: null
-                };
-                this.setState(this.state)
+                    count: null,
+                })
             }
         })
+
+        console.log(this.props.history.location)
+        if (this.props.history.location.pathname === "/edit" && this.state.modal !== true){
+            this.props.history.push({
+                pathname: "/search"
+            })
+            
+        }
+
+        this.openModal = this.openModal.bind(this);
+        this.closeModal = this.closeModal.bind(this);
+    }
+    openModal() {
+        this.setState({modal: true});
+    }
+
+    closeModal() {
+        this.setState({
+            modal: false,
+            editData: null
+        });
+        this.props.history.goBack()
     }
     search(query, page=1){
         let offset = (page - 1) * 50
@@ -89,9 +159,7 @@ class Search extends Component {
             }
         }
 
-        return this.Auth.fetch(`${this.Auth.domain}/api/v1/haikai/?query=${query}&offset=${offset}&limit=${limit}`, {
-            method: 'GET'
-        })
+        return this.Auth.get(`${this.Auth.domain}/api/v1/haikai/?query=${query}&offset=${offset}&limit=${limit}`)
         .then(res => {
             this.renderResult(res, page)
             return res
@@ -109,10 +177,16 @@ class Search extends Component {
             list.push(
                 <div className="uk-card uk-card-default uk-card-body uk-align-center uk-margin-medium-left uk-margin-medium-right uk-margin-remove-adjacent" uk-grid="true">
                     {result.firstPart && result.secondPart && result.lastPart ? <p className="kaguya largeText">{result.firstPart}　{result.secondPart}　{result.lastPart}</p> : <p className="kaguya largeText">{result.firstPartKana}　{result.secondPartKana}　{result.lastPartKana}</p>}
-                    <div className="uk-flex uk-align-right">
-                        {result.author && <a className="uk-text-break badgeText uk-margin-small-right" href="#" >{result.author.name}</a> }
-                        {result.collection && <a className="uk-text-break badgeText" href="#" >{result.collection.name}</a>}
-                        {result.collection.parent && <a className="uk-text-break badgeText uk-margin-small-left" href="#" >{result.collection.parent.name}</a>}
+                    <div className="uk-align-center uk-align-right@s">
+                        <div className="uk-grid-collapse" uk-grid="true">
+                            {result.author && <a className="badgeText uk-margin-right" href="#" >{result.author.name}</a> }
+                            {result.collection && <a className="badgeText uk-margin-right" href="#" >{result.collection.name}</a>}
+                            {result.collection.parent && <a className="badgeText uk-margin-right" href="#" >{result.collection.parent.name}</a>}
+                            <Link className="uk-text-break link" onClick={e => this.changeEdit(e,　result)}>
+                                <span className="uk-visible@s" uk-icon="icon: file-edit; ratio: 1.5"></span>
+                                <span className="uk-hidden@s" uk-icon="icon: file-edit; ratio: 1"></span>
+                            </Link>
+                        </div>
                     </div>
                 </div>
             );
@@ -219,15 +293,47 @@ class Search extends Component {
     }
     componentDidUpdate(prevProps) {
         window.scrollTo(0, 0);
-
     }
+
     handleFormSubmit(e){
         e.preventDefault();
+
         this.props.history.push({
             pathname: '/search',
             search: `?q=${this.state.q}`,
         })
+
         this.setState({list: null})
+    }
+    handleEditFormSubmit(e){
+        e.preventDefault();
+
+        // let params = new URLSearchParams();
+        // params.append('number', this.state.number);
+        // params.append('firstPart', this.state.firstPart);
+
+        this.Auth.put(`${this.Auth.domain}/api/v1/haikai/${this.state.id}/`,{},  
+            JSON.stringify({
+                "id": this.state.id,
+                "number": this.state.number,
+                "firstPart": this.state.firstPart,
+                "secondPart": this.state.secondPart,
+                "lastPart": this.state.lastPart,
+                "firstPartKana": this.state.firstPartKana,
+                "secondPartKana": this.state.secondPartKana,
+                "lastPartKana": this.state.lastPartKana,
+                "description": this.state.description,
+                "author": this.state.author.value,
+                "collection": this.state.collection.value,
+                "year": this.state.year.value
+            }),
+        ).then((response) => {
+            console.log(response)
+            this.closeModal();
+        })
+        .catch((error) => {
+            console.log(error)
+        })
     }
     changePage(e, page){
         e.preventDefault();
@@ -239,6 +345,7 @@ class Search extends Component {
     }
     changeTarget(e, target){
         e.preventDefault();
+
         if(target === 'tanka'){
             this.props.history.push({
                 pathname: '/search',
@@ -257,6 +364,74 @@ class Search extends Component {
                 search: `?q=${this.state.q}`,
             });
         }
+    }
+    changeEdit(e, props){
+        e.preventDefault();
+
+        this.props.history.push({
+            pathname: '/edit',
+        })
+        
+        this.setState({
+            id: props.id,
+            firstPart: props.firstPart,
+            secondPart: props.secondPart,
+            thirdPart: props.thirdPart,
+            fourthPart: props.fourthPart,
+            lastPart: props.lastPart,
+            firstPartKana: props.firstPartKana,
+            secondPartKana: props.secondPartKana,
+            thirdPartKana: props.thirdPartKana,
+            fourthPartKana: props.fourthPartKana,
+            lastPartKana: props.lastPartKana,
+            description: props.description,
+            author: 
+            {
+                value: props.author.id,
+                label: props.author.name
+            },
+            collection: {
+                value: props.collection.id,
+                label: props.collection.name
+            },
+            text: props.text,
+            number: props.number
+        })
+
+        this.openModal()
+    }
+
+    getSelectCollection(input){
+        if (!input) {
+            return Promise.resolve({ options: [] });
+        }
+
+        return this.Auth.get(`${this.Auth.domain}/api/v1/collection?query=${input}`)
+        .then((response) => {
+          let options = response.results.map( collection => ({ value: collection.id, label: collection.name }));
+          return options
+        })
+        .catch((e) => {
+            console.log(e);
+            return Promise.resolve({ options: [] });
+        });
+    }
+
+    getSelectAuthor(input){
+        if (!input) {
+            return Promise.resolve({ options: [] });
+        }
+
+        return this.Auth.get(`${this.Auth.domain}/api/v1/author?query=${input}`)
+        .then((response) => {
+            console.log(response)
+            let options = response.results.map( author => ({ value: author.id, label: author.name }));
+            return options
+        })
+        .catch((e) => {
+            console.log(e);
+            return Promise.resolve({ options: [] });
+        });
     }
     render() {
         return (
@@ -334,6 +509,118 @@ class Search extends Component {
                         }
                     })()}
                 </div>
+
+                <ReactModal 
+                    isOpen={this.state.modal}
+                    contentLabel="onRequestClose Example"
+                    onRequestClose={this.closeModal}
+                    className="Modal"
+                    overlayClassName="Overlay"
+                >
+                    <div class="uk-card">
+                        <div class="uk-card-header uk-margin-remove-bottom	">
+                            <button class="uk-close-large" type="button" uk-close="true" onClick={this.closeModal}></button>
+                        </div>
+                        <div class="uk-card-body uk-padding-remove-top">
+                            <fieldset class="uk-fieldset">
+                                <div class="uk-margin">
+                                    <legend class="uk-legend">編集</legend>
+                                </div>                                
+                                <form name="editForm" action="javascript:void(0)" onSubmit={this.handleEditFormSubmit}>
+                                    <div class="uk-margin">    
+                                        <label class="uk-form-label" for="form-stacked-text">漢字</label>
+                                        <div class="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
+                                            <div class="uk-width-1-3@s">
+                                                <input className="uk-input" type="text" placeholder="上の句" name="firstPart" autoComplete="off" value={this.state.firstPart} onChange={this.handleChange} />
+                                            </div>
+                                            <div class="uk-width-1-3@s">
+                                                <input class="uk-input" type="text" placeholder="中の句" name="secondPart" autoComplete="off" value={this.state.secondPart} onChange={this.handleChange}/>
+                                            </div>
+                                            <div class="uk-width-1-3@s">
+                                                <input class="uk-input" type="text" placeholder="下の句" name="lastPart" autoComplete="off" value={this.state.lastPart} onChange={this.handleChange}/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="uk-margin">
+                                        <label class="uk-form-label" for="form-stacked-text">かな</label>
+                                        <div class="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
+                                            <div class="uk-width-1-3@s">
+                                                <input class="uk-input" type="text" placeholder="上の句 (かな)" name="firstPartKana" autoComplete="off" value={this.state.firstPartKana} onChange={this.handleChange}/>
+                                            </div>
+                                            <div class="uk-width-1-3@s">
+                                                <input class="uk-input" type="text" placeholder="中の句 (かな)" name="secondPartKana" autoComplete="off" value={this.state.secondPartKana} onChange={this.handleChange}/>
+                                            </div>
+                                            <div class="uk-width-1-3@s">
+                                                <input class="uk-input" type="text" placeholder="下の句 (かな)" name="lastPartKana" autoComplete="off" value={this.state.lastPartKana} onChange={this.handleChange}/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="uk-margin">
+                                        <label class="uk-form-label" for="form-stacked-text">説明</label>
+                                        <div class="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
+                                            <div class="uk-width-1-1@s">
+                                                <textarea class="uk-textarea" rows="5" placeholder="" name="description" autoComplete="off" value={this.state.description} onChange={this.handleChange}></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="uk-margin">
+                                        <label class="uk-form-label" for="form-stacked-text">所属作品</label>
+                                        <div class="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
+                                            <div>
+                                            <AsyncSelect
+                                                    value={this.state.collection}
+                                                    onChange={e => {
+                                                        this.setState({
+                                                            collection: {
+                                                                label: e.label,
+                                                                value: e.value
+                                                            }
+                                                        });
+                                                    }}
+                                                    loadingMessage ={() => "検索中です..."}
+                                                    noOptionsMessage={() => "結果が見つかりませんでした"}
+                                                    loadOptions={this.getSelectCollection}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="uk-margin">
+                                        <label class="uk-form-label" for="form-stacked-text">作者</label>
+                                        <div class="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
+                                            <div>
+                                                <AsyncSelect
+                                                    value={this.state.author}
+                                                    onChange={e => {
+                                                        this.setState({
+                                                            author: {
+                                                                label: e.label,
+                                                                value: e.value
+                                                            }
+                                                        });
+                                                    }}
+                                                    loadingMessage ={() => "検索中です..."}
+                                                    noOptionsMessage={() => "結果が見つかりませんでした"}
+                                                    loadOptions={this.getSelectAuthor}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="uk-margin">
+                                        <label class="uk-form-label" for="form-stacked-text">番号</label>
+                                        <div class="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
+                                            <div class="uk-width-1-3@s">
+                                                <input class="uk-input" type="number" placeholder="" name="number" autoComplete="off" value={this.state.number} onChange={this.handleChange}/>
+                                            </div>
+                                            <div>
+                                                <button class="uk-align-right uk-button uk-button-default uk-text-center">更新する</button>
+                                            </div>
+                                        </div>
+                                        </div>
+                                    </form>
+                            </fieldset>
+                        </div>
+                    </div>
+                </ReactModal>
             </div>
         );
     }

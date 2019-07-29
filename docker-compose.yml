@@ -17,6 +17,7 @@ services:
   react:
     build:
       context: ./react
+    restart: always
     command: bash -c "./run.sh"
     environment: 
       - CHOKIDAR_USEPOLLING=true

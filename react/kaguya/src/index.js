@@ -8,23 +8,23 @@ import Login from './components/Login'
 import Logout from './components/Logout'
 import NotFound from './components/NotFound'
 
-// ルーターの設定
 import { createBrowserHistory } from 'history'
 import { Router, Route, Switch } from 'react-router-dom';
 // import logger from 'redux-logger';
 
-// historyインスタンスを作成する処理追加
 const history = createBrowserHistory();
+
 
 ReactDOM.render(
   <Router history={history}>
     <Switch>
       <Route exact path="/" component={App} />
       <Route exact path="/search" component={Search} />
+      <Route exact path="/edit" component={Search} />
       <Route exact path="/login" component={Login} />
       <Route exact path="/logout" component={Logout} />
       <Route component={NotFound} />
-    </Switch>          
+    </Switch>
   </Router>
   , document.getElementById('root')
 );
