@@ -88,6 +88,7 @@ class KotenListSerializer(KotenSerializer):
     year = YearSerializer()
 
 
+
 class HaikaiFilter(filters.FilterSet):
 
     # フィルタの定義
@@ -109,3 +110,24 @@ class HaikaiFilter(filters.FilterSet):
             (query) &= item
 
         return queryset.filter(query).select_related('author', 'collection', 'collection__parent')
+    
+
+class CollectionFilter(filters.FilterSet):
+    query = filters.CharFilter(field_name='query', method='search', label="query")
+
+    class Meta:
+        model = Collection
+        fields = ['query']
+    
+    def search(self, queryset, name, value):
+        return queryset.filter(name__contains=value).select_related('parent')
+
+class AuthorFilter(filters.FilterSet):
+    query = filters.CharFilter(field_name='query', method='search', label="query")
+
+    class Meta:
+        model = Author
+        fields = ['query']
+    
+    def search(self, queryset, name, value):
+        return queryset.filter(name__contains=value)

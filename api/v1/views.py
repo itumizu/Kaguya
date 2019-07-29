@@ -5,7 +5,7 @@ from search.models import Haikai, Tanka, Koten, Collection, Author, Year
 from .serializer import HaikaiSerializer, TankaSerializer, KotenSerializer, \
     HaikaiListSerializer, TankaListSerializer, KotenListSerializer, \
     CollectionSerializer, AuthorSerializer, YearSerializer, UserSerializer, CollectionListSerializer, \
-    HaikaiFilter
+    HaikaiFilter, CollectionFilter, AuthorFilter
     
 
 class HaikaiViewSet(viewsets.ModelViewSet):
@@ -35,6 +35,7 @@ class KotenViewSet(viewsets.ModelViewSet):
 
 class CollectionViewSet(viewsets.ModelViewSet):
     queryset = Collection.objects.all()
+    filter_class = CollectionFilter
 
     def get_serializer_class(self):
         if self.request.method in ['GET']:
@@ -44,6 +45,7 @@ class CollectionViewSet(viewsets.ModelViewSet):
 class AuthorViewSet(viewsets.ModelViewSet):
     queryset = Author.objects.all()
     serializer_class = AuthorSerializer
+    filter_class = AuthorFilter
 
 class YearViewSet(viewsets.ModelViewSet):
     queryset = Year.objects.all()
