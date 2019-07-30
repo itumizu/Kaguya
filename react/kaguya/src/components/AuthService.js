@@ -162,17 +162,17 @@ export default class AuthService {
             }
         }
 
-        return axios.post(url, {
+        return axios.post(url, data, {
             headers,
             ...options
-        }, data)
+        })
         .then((response) => {
             console.log(response)
             return response.data
         })
         .catch((e) => {
             console.log(e)
-            return e
+            throw e
         })
     }
     put(url, options, data, auth=false) {
@@ -197,7 +197,7 @@ export default class AuthService {
         })
         .catch((e) => {
             console.log(e)
-            return e
+            throw e
         })
     }
     get(url, options, data, auth=false) {
@@ -222,7 +222,7 @@ export default class AuthService {
         })
         .catch((e) => {
             console.log(e)
-            return e
+            throw e
         })
     }
 }
