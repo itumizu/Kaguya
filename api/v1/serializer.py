@@ -111,6 +111,39 @@ class HaikaiFilter(filters.FilterSet):
 
         return queryset.filter(query).select_related('author', 'collection', 'collection__parent')
     
+class TankaFilter(filters.FilterSet):
+    query = filters.CharFilter(field_name='query', method='search', label="query")
+    
+    class Meta:
+        model = Tanka
+        fields = ['query']
+    
+    def search(self, queryset, name, value):
+        words = re.split(r"\s", value)
+        queries = [Q(firstPart__contains=word) | Q(secondPart__contains=word) | Q(thirdPart__contains=word) | Q(fourthPart__contains=word) | Q(lastPart__contains=word) | Q(firstPartKana__contains=word) | Q(secondPartKana__contains=word) | Q(thirdPartKana__contains=word) | Q(fourthPartKana__contains=word) | Q(lastPartKana__contains=word) | Q(collection__name__contains=word) | Q(collection__parent__name__contains=word) | Q(author__name__contains=word) for word in words]
+        query = queries.pop()
+        
+        for item in queries:
+            (query) &= item
+
+        return queryset.filter(query).select_related('author', 'collection', 'collection__parent')
+
+class KotenFilter(filters.FilterSet):
+    query = filters.CharFilter(field_name='query', method='search', label="query")
+
+    class Meta:
+        model = Koten
+        fields = ['query']
+    
+    def search(self, queryset, name, value):
+        words = re.split(r"\s", value)
+        queries = [Q(text__contains=word) | Q(collection__name__contains=word) | Q(collection__parent__name__contains=word) | Q(author__name__contains=word) for word in words]
+        query = queries.pop()
+        
+        for item in queries:
+            (query) &= item
+
+        return queryset.filter(query).select_related('author', 'collection', 'collection__parent')
 
 class CollectionFilter(filters.FilterSet):
     query = filters.CharFilter(field_name='query', method='search', label="query")
