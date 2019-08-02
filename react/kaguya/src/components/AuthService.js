@@ -32,8 +32,8 @@ export default class AuthService {
     }
 
     loggedIn() {
-        var token = this.getToken()
-        var refreshToken = this.getRefreshToken()
+        let token = this.getToken()
+        let refreshToken = this.getRefreshToken()
         return !!token && !!refreshToken && !!this.isTokenVerified(token)
     }
 
@@ -47,7 +47,7 @@ export default class AuthService {
             }
         }
 
-        var decoded = decode(token);
+        let decoded = decode(token);
         let exp = decoded.exp;
         let nowTime = Math.round((new Date()).getTime() / 1000);
 
@@ -151,7 +151,7 @@ export default class AuthService {
     }
 
     post(url, options, data, auth=false) {
-        var headers = {
+        let headers = {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         }

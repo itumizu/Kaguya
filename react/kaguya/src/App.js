@@ -32,7 +32,7 @@ class App extends Component {
           <div className="uk-navbar-right">
               <ul className="uk-navbar-nav">
                 <li>
-                  <a className="uk-navbar-toggle" uk-navbar-toggle-icon="true" href=""></a>
+                  <a className="uk-navbar-toggle" uk-navbar-toggle-icon="true" />
                   <div className="uk-navbar-dropdown">
                       <ul className="uk-nav uk-navbar-dropdown-nav">
                         <li><Link to='/logout'>ログアウト</Link></li>
@@ -47,7 +47,7 @@ class App extends Component {
             <form name="searchForm" action="javascript:void(0)" onSubmit={this.handleFormSubmit} className="uk-margin" autoComplete="off">
                 <div className="uk-margin uk-margin-left uk-margin-right">
                     <div className="uk-inline uk-box-shadow-hover-medium">
-                        <a className="uk-form-icon uk-form-icon-flip" href="javascript:searchForm.submit()" uk-icon="icon: search"></a>
+                        <a className="uk-form-icon uk-form-icon-flip" onClick={this.handleFormSubmit} uk-icon="icon: search" />
                         <input className="uk-input uk-form-width-large" type="text" name="q" onChange={this.handleChange}/>
                     </div>
                 </div>

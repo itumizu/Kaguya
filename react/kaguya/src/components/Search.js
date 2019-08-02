@@ -1,18 +1,21 @@
 import React, { Component } from 'react';
 import ReactModal from "react-modal";
+import ReactMarkdown from "react-markdown";
 import { withRouter, Link } from 'react-router-dom';
 import queryString from 'query-string';
 import AsyncSelect from 'react-select/async';
+import moment from "moment";
 
 import withAuth from '../withAuth'
 import AuthService from './AuthService';
 import '../css/style.sass';
+import UIkit from 'uikit';
 
 class Search extends Component {
     constructor(props){
         super(props);
 
-        var targets = ['haikai', 'tanka', 'koten']
+        let targets = ['haikai', 'tanka', 'koten']
 
         this.state = {
             q: "",
@@ -42,12 +45,20 @@ class Search extends Component {
             text: "",
             number: "",
             modal: false,
-            mode: "edit"
+            mode: "edit",
+
+            newCollection: "",
+            newCollectionParent: "",
+            newCollectionDescription: "",
+            newAuthor: "",
+            newAuthorDescription: ""
         };
 
         this.handleChange = this.handleChange.bind(this);
         this.handleFormSubmit = this.handleFormSubmit.bind(this);
         this.handleEditFormSubmit = this.handleEditFormSubmit.bind(this);
+        this.handleNewCollectionFormSubmit = this.handleNewCollectionFormSubmit.bind(this);
+        this.handleNewAuthorFormSubmit = this.handleNewAuthorFormSubmit.bind(this);
         this.getSelectAuthor = this.getSelectAuthor.bind(this);
         this.getSelectCollection = this.getSelectCollection.bind(this);
         this.openModal = this.openModal.bind(this);
@@ -199,21 +210,41 @@ class Search extends Component {
         let paginations = this.pagination(page, Math.ceil(count / 50))
         
         if (target === "tanka"){
-            for(var i in res.results){
+            for(let i in res.results){
                 let result = res.results[i]
 
                 list.push(
                     <div className="uk-card uk-card-default uk-card-body uk-align-center uk-margin-medium-left uk-margin-medium-right uk-margin-remove-adjacent" uk-grid="true">
-                        {result.firstPart ? <p className="kaguya largeText">{result.firstPart}　{result.secondPart}　{result.thirdPart} {result.fourthPart} {result.lastPart} </p> : <p className="kaguya largeText">{result.firstPartKana}　{result.secondPartKana} {result.thirdPartKana} {result.fourthPartKana} {result.lastPartKana}</p>}
+                        {result.firstPart ? <p className="kaguya largeText uk-padding-remove-left">{result.firstPart}　{result.secondPart}　{result.thirdPart} {result.fourthPart} {result.lastPart} </p> : <p className="kaguya largeText uk-padding-remove-left">{result.firstPartKana}　{result.secondPartKana} {result.thirdPartKana} {result.fourthPartKana} {result.lastPartKana}</p>}
+                        <ul className="uk-margin-remove" uk-accordion="true">
+                            <li>
+                                <a class="uk-accordion-title uk-margin-remove" href="#"></a>
+                                <div class="uk-accordion-content">
+                                    {result.firstPart ? <p className="kaguya uk-padding-remove-left">{result.firstPartKana}　{result.secondPartKana}　{result.thirdPartKana} {result.fourthPartKana} {result.lastPartKana} </p> : <p className="kaguya uk-padding-remove-left">{result.firstPart}　{result.secondPart} {result.thirdPart} {result.fourthPart} {result.lastPart}</p>}
+
+                                    <ReactMarkdown
+                                        source={result.description}
+                                    ></ReactMarkdown>
+                                    <div className="uk-align-right">
+                                        <Link className="uk-text-break link uk-align-right uk-margin-remove" onClick={e => this.changeEdit(e,　result)}>
+                                            <span className="uk-visible@s" uk-icon="icon: file-edit; ratio: 1.6"></span>
+                                            <span className="uk-hidden@s" uk-icon="icon: file-edit; ratio: 1.2"></span>
+                                        </Link>
+                                        <br/>
+                                        <p>
+                                            番号: {result.number}<br/>
+                                            更新日時: {moment(result.updated_at).format('YYYY/MM/DD HH:mm:ss')}<br/>
+                                            作成日時: {moment(result.created_at).format('YYYY/MM/DD HH:mm:ss')}
+                                        </p>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
                         <div className="uk-align-center uk-align-right@s">
                             <div className="uk-grid-collapse" uk-grid="true">
                                 {result.author && <a className="badgeText uk-margin-right" href="#" >{result.author.name}</a> }
                                 {result.collection && <a className="badgeText uk-margin-right" href="#" >{result.collection.name}</a>}
                                 {result.collection.parent && <a className="badgeText uk-margin-right" href="#" >{result.collection.parent.name}</a>}
-                                <Link className="uk-text-break link" onClick={e => this.changeEdit(e,　result)}>
-                                    <span className="uk-visible@s" uk-icon="icon: file-edit; ratio: 1.5"></span>
-                                    <span className="uk-hidden@s" uk-icon="icon: file-edit; ratio: 1"></span>
-                                </Link>
                             </div>
                         </div>
                     </div>
@@ -222,20 +253,42 @@ class Search extends Component {
         }
         
         else if (target === "koten"){
-            for(var i in res.results){
+            for(let i in res.results){
                 let result = res.results[i]
+
                 list.push(
                     <div className="uk-card uk-card-default uk-card-body uk-align-center uk-margin-medium-left uk-margin-medium-right uk-margin-remove-adjacent" uk-grid="true">
-                        <p className="kaguya largeText">{result.text}</p>
+                        <div className="kaguya largeText uk-padding-remove-left">
+                            <ReactMarkdown
+                                source={result.text}
+                            ></ReactMarkdown>
+                        </div>
+                        <ul className="uk-margin-remove" uk-accordion="true">
+                            <li>
+                                <a class="uk-accordion-title uk-margin-remove" href="#"></a>
+                                <div class="uk-accordion-content">
+                                    <ReactMarkdown
+                                        source={result.description}
+                                    ></ReactMarkdown>
+                                    <div className="uk-align-right">
+                                        <Link className="uk-text-break link uk-align-right uk-margin-remove" onClick={e => this.changeEdit(e,　result)}>
+                                            <span className="uk-visible@s" uk-icon="icon: file-edit; ratio: 1.6"></span>
+                                            <span className="uk-hidden@s" uk-icon="icon: file-edit; ratio: 1.2"></span>
+                                        </Link>
+                                        <br/>
+                                        <p>
+                                            更新日時: {moment(result.updated_at).format('YYYY/MM/DD HH:mm:ss')}<br/>
+                                            作成日時: {moment(result.created_at).format('YYYY/MM/DD HH:mm:ss')}
+                                        </p>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
                         <div className="uk-align-center uk-align-right@s">
                             <div className="uk-grid-collapse" uk-grid="true">
                                 {result.author && <a className="badgeText uk-margin-right" href="#" >{result.author.name}</a> }
                                 {result.collection && <a className="badgeText uk-margin-right" href="#" >{result.collection.name}</a>}
-                                {result.collection.parent && <a className="badgeText uk-margin-right" href="#" >{result.collection.parent.name}</a>}
-                                <Link className="uk-text-break link" onClick={e => this.changeEdit(e,　result)}>
-                                    <span className="uk-visible@s" uk-icon="icon: file-edit; ratio: 1.5"></span>
-                                    <span className="uk-hidden@s" uk-icon="icon: file-edit; ratio: 1"></span>
-                                </Link>
+                                {result.collection.parent && <a className="badgeText uk-margin-right" href="#" >{result.collection.parent.name}</a>}                                
                             </div>
                         </div>
                     </div>
@@ -243,20 +296,41 @@ class Search extends Component {
             }
         }
         else{
-            for(var i in res.results){
+            for(let i in res.results){
                 let result = res.results[i]
                 list.push(
                     <div className="uk-card uk-card-default uk-card-body uk-align-center uk-margin-medium-left uk-margin-medium-right uk-margin-remove-adjacent" uk-grid="true">
-                        {result.firstPart ? <p className="kaguya largeText">{result.firstPart}　{result.secondPart}　{result.lastPart}</p> : <p className="kaguya largeText">{result.firstPartKana}　{result.secondPartKana}　{result.lastPartKana}</p>}
+                        {result.firstPart ? <p className="kaguya largeText uk-padding-remove-left">{result.firstPart}　{result.secondPart}　{result.lastPart}</p> : <p className="kaguya largeText uk-padding-remove-left">{result.firstPartKana}　{result.secondPartKana}　{result.lastPartKana}</p>}
+                        <ul className="uk-margin-remove" uk-accordion="true">
+                            <li>
+                                <a class="uk-accordion-title uk-margin-remove" href="#"></a>
+                                <div class="uk-accordion-content">
+                                    {result.firstPart ? <p className="kaguya uk-padding-remove-left">{result.firstPartKana}　{result.secondPartKana}　{result.lastPartKana}</p> : <p className="kaguya uk-padding-remove-left">{result.firstPart}　{result.secondPart}　{result.lastPart}</p>}
+
+                                    <ReactMarkdown
+                                        source={result.description}
+                                    ></ReactMarkdown>
+
+                                    <div className="uk-align-right">
+                                        <Link className="uk-text-break link uk-align-right uk-margin-remove" onClick={e => this.changeEdit(e,　result)}>
+                                            <span className="uk-visible@s" uk-icon="icon: file-edit; ratio: 1.6"></span>
+                                            <span className="uk-hidden@s" uk-icon="icon: file-edit; ratio: 1.2"></span>
+                                        </Link>
+                                        <br/>
+                                        <p>
+                                            番号: {result.number}<br/>
+                                            更新日時: {moment(result.updated_at).format('YYYY/MM/DD HH:mm:ss')}<br/>
+                                            作成日時: {moment(result.created_at).format('YYYY/MM/DD HH:mm:ss')}
+                                        </p>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
                         <div className="uk-align-center uk-align-right@s">
                             <div className="uk-grid-collapse" uk-grid="true">
                                 {result.author && <a className="badgeText uk-margin-right" href="#" >{result.author.name}</a> }
                                 {result.collection && <a className="badgeText uk-margin-right" href="#" >{result.collection.name}</a>}
                                 {result.collection.parent && <a className="badgeText uk-margin-right" href="#" >{result.collection.parent.name}</a>}
-                                <Link className="uk-text-break link" onClick={e => this.changeEdit(e,　result)}>
-                                    <span className="uk-visible@s" uk-icon="icon: file-edit; ratio: 1.5"></span>
-                                    <span className="uk-hidden@s" uk-icon="icon: file-edit; ratio: 1"></span>
-                                </Link>
                             </div>
                         </div>
                     </div>
@@ -331,6 +405,27 @@ class Search extends Component {
             }
         }
 
+        //かぐや様は告らせたい
+        if (this.state.q === "かぐや様は告らせたい"){
+            list = []
+            count = 1
+            list.push(
+                <div className="uk-card uk-card-default uk-card-body uk-align-center uk-margin-medium-left uk-margin-medium-right uk-margin-remove-adjacent" uk-grid="true">
+                    <p className="kaguya largeText uk-padding-remove-left">かぐや様は告らせたい〜天才たちの恋愛頭脳戦〜</p>
+                    <div className="uk-align-center uk-align-right@s">
+                        <div className="uk-grid-collapse" uk-grid="true">
+                            <a className="badgeText uk-margin-right" href="https://twitter.com/akasaka_aka?lang=ja">赤坂アカ</a>
+                            <a className="badgeText uk-margin-right" href="https://twitter.com/824_aoi?lang=ja">古賀葵</a>
+                            <a className="badgeText uk-margin-right" href="https://kaguya.love/" >アニメ公式サイト</a>
+                            <a className="badgeText uk-margin-right" href="https://youngjump.jp/kaguyasama/" >漫画公式サイト</a>
+                            <a className="badgeText uk-margin-right" href="https://kaguyasama-movie.com/" >映画公式サイト</a>
+                        </div>
+                    </div>
+                </div>               
+            )
+        }
+        //かぐや様は告らせたい
+
         this.setState({
             list: list,
             paginationList: paginationList,
@@ -362,14 +457,14 @@ class Search extends Component {
                 endIndex = pageLength
             }
 
-            for (var i of Array(endIndex - startIndex).keys()){
+            for (let i of Array(endIndex - startIndex).keys()){
                 pageList.push(i + startIndex)
             }
 
             return pageList.slice(0, (2 * 3 + 1));
         }
 
-        for (var i of Array(pageLength).keys()){
+        for (let i of Array(pageLength).keys()){
             pageList.push(i + 1)
         }
 
@@ -405,6 +500,56 @@ class Search extends Component {
             displayList: false
         })
 
+    }
+
+    handleNewCollectionFormSubmit(e){
+        e.preventDefault();
+        console.log(this.state)
+        this.Auth.post(`${this.Auth.domain}/api/v1/collection/`,{},  
+            JSON.stringify({
+                name: this.state.newCollection,
+                descrption: this.state.newCollectionDescrption,
+                parent: this.state.newCollectionParent.value
+            }),
+            ).then((response) => {
+                console.log(response)
+
+                this.setState({
+                    collection: {
+                        label: response.name,
+                        value: response.id
+                    }
+                })
+
+            })
+            .catch((error) => {
+                console.log(error)
+            }
+        )
+    }
+
+    handleNewAuthorFormSubmit(e){
+        e.preventDefault();
+        console.log(this.state)
+
+        this.Auth.post(`${this.Auth.domain}/api/v1/author/`,{},  
+            JSON.stringify({
+                name: this.state.newAuthor,
+                descrption: this.state.newAuthorDescrption,
+            }),
+            ).then((response) => {
+                console.log(response)
+                this.setState({
+                    author: {
+                        label: response.name,
+                        value: response.id
+                    }
+                })
+            })
+            .catch((error) => {
+                console.log(error)
+            }
+        )
     }
 
     handleEditFormSubmit(e){
@@ -612,9 +757,33 @@ class Search extends Component {
     changeEdit(e, props){
         e.preventDefault();
 
+        let authorData = {
+            label: "なし",
+            value: null
+        }
+        let collectionData = {
+            label: "なし",
+            value: null
+        }
+
         this.props.history.push({
             pathname: '/edit',
         })
+        console.log(props)
+
+        if (props.author !== null){
+            authorData.value = props.author.id
+            authorData.label = props.author.name
+        }
+
+        if (props.collection.parent){
+            collectionData.value = props.collection.id
+            collectionData.label = props.collection.name + " (" + props.collection.parent.name + ")"
+        }
+        else{
+            collectionData.value = props.collection.id
+            collectionData.label = props.collection.name
+        }
         
         this.setState({
             id: props.id,
@@ -629,18 +798,19 @@ class Search extends Component {
             fourthPartKana: props.fourthPartKana,
             lastPartKana: props.lastPartKana,
             description: props.description,
-            author: 
-            {
-                value: props.author.id,
-                label: props.author.name
+            author: authorData,
+            collection: collectionData,
+            newCollection: "",
+            newCollectionParent: {
+                label: "なし",
+                value: null
             },
-            collection: {
-                value: props.collection.id,
-                label: props.collection.name
-            },
+            newCollectionDescription: "",
+            newAuthor: "",
+            newAuthorDescription: "",
             text: props.text,
             number: props.number,
-            mode: "edit"
+            mode: "edit",
         })
 
         this.openModal()
@@ -648,7 +818,7 @@ class Search extends Component {
 
     changeCreate(e){
         e.preventDefault();
-
+        
         this.props.history.push({
             pathname: '/edit',
         })
@@ -669,12 +839,20 @@ class Search extends Component {
             author: 
             {
                 value: null,
-                label: null
+                label: "なし"
             },
             collection: {
                 value: null,
-                label: null
+                label: "なし"
             },
+            newCollection: "",
+            newCollectionParent: {
+                label: "なし",
+                value: null
+            },
+            newCollectionDescription: "",
+            newAuthor: "",
+            newAuthorDescription: "",
             text: "",
             number: 1,
             mode: "create"
@@ -687,10 +865,27 @@ class Search extends Component {
         if (!input) {
             return Promise.resolve({ options: [] });
         }
+
         return this.Auth.get(`${this.Auth.domain}/api/v1/collection?query=${input}`)
         .then((response) => {
             console.log(response)
-            let options = response.results.map( collection => ({ value: collection.id, label: collection.name }));
+
+            let options = []
+            if (response.count > 0){
+                options.push({value: "", label: "なし"})
+            }
+
+            options = options.concat(response.results.map(
+                collection => 
+                {
+                    if (collection.parent){
+                        return { value: collection.id, label: collection.name + " (" + collection.parent.name + ")"};
+                    }
+                    else{
+                        return { value: collection.id, label: collection.name};
+                    }
+                }));
+            console.log(options)
             return options
         })
         .catch((e) => {
@@ -707,7 +902,13 @@ class Search extends Component {
         return this.Auth.get(`${this.Auth.domain}/api/v1/author?query=${input}`)
         .then((response) => {
             console.log(response)
-            let options = response.results.map( author => ({ value: author.id, label: author.name }));
+
+            let options = []
+            if (response.count > 0){
+                options.push({value: "", label: "なし"})
+            }
+            
+            options = options.concat(response.results.map( author => ({ value: author.id, label: author.name })));
             return options
         })
         .catch((e) => {
@@ -739,9 +940,9 @@ class Search extends Component {
                     
                     <div className="uk-navbar-right">
                         <div className="uk-inline uk-visible@s">
-                            <div class="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
+                            <div className="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
                                 <div>
-                                    <button class="uk-align-right uk-button uk-button-default uk-text-center" onClick={e => this.changeCreate(e)} >追加</button>
+                                    <button className="uk-align-right uk-button uk-button-default uk-text-center" onClick={e => this.changeCreate(e)} >追加</button>
                                 </div>
                             </div>
                         </div>
@@ -773,7 +974,7 @@ class Search extends Component {
                         {
                             if (this.state.target === "koten"){
                                 return (
-                                    <ul class="uk-child-width-expand" uk-tab="true">
+                                    <ul className="uk-child-width-expand" uk-tab="true">
                                         <li><a onClick={e => this.changeTarget(e,　'haikai')}>俳諧</a></li>
                                         <li><a onClick={e => this.changeTarget(e,　'tanka')}>短歌</a></li>
                                         <li className="uk-active"><a onClick={e => this.changeTarget(e,　'koten')}>古典</a></li>
@@ -782,7 +983,7 @@ class Search extends Component {
                             }
                             else if (this.state.target === "tanka"){
                                 return (
-                                    <ul class="uk-child-width-expand" uk-tab="true">
+                                    <ul className="uk-child-width-expand" uk-tab="true">
                                         <li><a onClick={e => this.changeTarget(e,　'haikai')}>俳諧</a></li>
                                         <li className="uk-active"><a onClick={e => this.changeTarget(e,　'tanka')}>短歌</a></li>
                                         <li><a onClick={e => this.changeTarget(e,　'koten')}>古典</a></li>
@@ -791,7 +992,7 @@ class Search extends Component {
                             }
                             else{
                                 return (
-                                    <ul class="uk-child-width-expand" uk-tab="true">
+                                    <ul className="uk-child-width-expand" uk-tab="true">
                                         <li className="uk-active"><a onClick={e => this.changeTarget(e,　'haikai')}>俳諧</a></li>
                                         <li><a onClick={e => this.changeTarget(e,　'tanka')}>短歌</a></li>
                                         <li><a onClick={e => this.changeTarget(e,　'koten')}>古典</a></li>
@@ -841,11 +1042,11 @@ class Search extends Component {
                             if (this.state.count > 0){
                                 return (
                                     <div>
-                                        <div class="uk-clearfix uk-display-inline">
-                                            <div class="uk-float-left uk-margin-large-left">
+                                        <div className="uk-clearfix uk-display-inline">
+                                            <div className="uk-float-left uk-margin-large-left">
                                                 <p className="">{this.state.count} 件 {this.state.page}ページ目 ({(this.state.page - 1) * 50 + 1}～{(this.state.page - 1) * 50 + 50}件)</p>
                                             </div>
-                                            <div class="uk-float-right uk-margin-large-right@s uk-margin-small-right uk-hidden@s">
+                                            <div className="uk-float-right uk-margin-large-right@s uk-margin-small-right uk-hidden@s">
                                                 <button className="uk-button uk-button-default"　onClick={e => this.changeCreate(e)}>追加</button>
                                             </div>
                                         </div>
@@ -859,11 +1060,11 @@ class Search extends Component {
                                 if (this.state.count !== null){
                                     return (
                                         <div>
-                                            <div class="uk-clearfix uk-display-inline">
-                                                <div class="uk-float-left uk-margin-large-left">
+                                            <div className="uk-clearfix uk-display-inline">
+                                                <div className="uk-float-left uk-margin-large-left">
                                                     <p className="">{this.state.count} 件</p>
                                                 </div>
-                                                <div class="uk-float-right uk-margin-large-right@s uk-margin-small-right uk-hidden@s">
+                                                <div className="uk-float-right uk-margin-large-right@s uk-margin-small-right uk-hidden@s">
                                                     <button className="uk-button uk-button-default"　onClick={e => this.changeCreate(e)}>追加</button>
                                                 </div>
                                             </div>
@@ -880,25 +1081,24 @@ class Search extends Component {
 
                 <ReactModal 
                     isOpen={this.state.modal}
-                    contentLabel="onRequestClose Example"
                     onRequestClose={this.closeModal}
                     className="Modal"
                     overlayClassName="Overlay"
                 >
-                    <div class="uk-card">
-                        <div class="uk-card-header uk-margin-remove-bottom	">
-                            <button class="uk-close-large" type="button" uk-close="true" onClick={this.closeModal}></button>
+                    <div className="uk-card">
+                        <div className="uk-card-header uk-margin-remove-bottom	">
+                            <button className="uk-close-large" type="button" uk-close="true" onClick={this.closeModal}></button>
                         </div>
-                        <div class="uk-card-body uk-padding-remove-top">
-                            <fieldset class="uk-fieldset">
-                                <div class="uk-margin">
+                        <div className="uk-card-body uk-padding-remove-top">
+                            <fieldset className="uk-fieldset">
+                                <div className="uk-margin">
                                     {(() =>
                                         {
                                             if(this.state.mode === "create"){
-                                                return <legend class="uk-legend">新規追加</legend>
+                                                return <legend className="uk-legend">新規追加</legend>
                                             }
                                             else{
-                                                return <legend class="uk-legend">編集</legend>
+                                                return <legend className="uk-legend">編集</legend>
                                             }
                                         }
                                     )()}
@@ -908,13 +1108,26 @@ class Search extends Component {
                                         if (this.state.target === "koten"){
                                             return (
                                                 <div>
-                                                    <div class="uk-margin">
-                                                        <label class="uk-form-label" for="form-stacked-text">本文</label>
-                                                        <div class="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
-                                                            <div class="uk-width-1-1@s">
-                                                                <textarea class="uk-textarea" rows="10" placeholder="" name="text" autoComplete="off" value={this.state.text} onChange={this.handleChange}></textarea>
+                                                    <div className="uk-margin">
+                                                        <label className="uk-form-label" for="form-stacked-text">本文(Markdown記法を使用できます)</label>
+                                                        <div className="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
+                                                            <div className="uk-width-1-1@s">
+                                                                <textarea className="uk-textarea" rows="10" placeholder="" name="text" autoComplete="off" value={this.state.text} onChange={this.handleChange}></textarea>
                                                             </div>
                                                         </div>
+                                                        <ul className="uk-margin-left uk-margin-right" uk-accordion="true">
+                                                            <li>
+                                                                <a class="uk-accordion-title" href="#"></a>
+                                                                <div class="uk-accordion-content">
+                                                                <p>プレビュー</p>
+                                                                    <hr/>
+                                                                    <ReactMarkdown
+                                                                        source={this.state.text}
+                                                                    ></ReactMarkdown>
+                                                                    <hr/>
+                                                                </div>
+                                                            </li>
+                                                        </ul>
                                                     </div>
                                                 </div>
                                             )
@@ -922,43 +1135,43 @@ class Search extends Component {
                                         else if (this.state.target === "tanka"){
                                             return (
                                             <div>
-                                                <div class="uk-margin">    
-                                                <label class="uk-form-label" for="form-stacked-text">漢字</label>
-                                                    <div class="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
-                                                        <div class="uk-width-1-3@s">
+                                                <div className="uk-margin">    
+                                                <label className="uk-form-label" for="form-stacked-text">漢字</label>
+                                                    <div className="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
+                                                        <div className="uk-width-1-3@s">
                                                             <input className="uk-input" type="text" placeholder="上の句" name="firstPart" autoComplete="off" value={this.state.firstPart} onChange={this.handleChange} />
                                                         </div>
-                                                        <div class="uk-width-1-3@s">
-                                                            <input class="uk-input" type="text" placeholder="中の句" name="secondPart" autoComplete="off" value={this.state.secondPart} onChange={this.handleChange}/>
+                                                        <div className="uk-width-1-3@s">
+                                                            <input className="uk-input" type="text" placeholder="中の句" name="secondPart" autoComplete="off" value={this.state.secondPart} onChange={this.handleChange}/>
                                                         </div>
-                                                        <div class="uk-width-1-3@s">
-                                                            <input class="uk-input" type="text" placeholder="下の句" name="thirdPart" autoComplete="off" value={this.state.thirdPart} onChange={this.handleChange}/>
+                                                        <div className="uk-width-1-3@s">
+                                                            <input className="uk-input" type="text" placeholder="下の句" name="thirdPart" autoComplete="off" value={this.state.thirdPart} onChange={this.handleChange}/>
                                                         </div>
-                                                        <div class="uk-width-1-3@s">
-                                                            <input class="uk-input" type="text" placeholder="中の句" name="fourthPart" autoComplete="off" value={this.state.fourthPart} onChange={this.handleChange}/>
+                                                        <div className="uk-width-1-3@s">
+                                                            <input className="uk-input" type="text" placeholder="中の句" name="fourthPart" autoComplete="off" value={this.state.fourthPart} onChange={this.handleChange}/>
                                                         </div>
-                                                        <div class="uk-width-1-3@s">
-                                                            <input class="uk-input" type="text" placeholder="下の句" name="lastPart" autoComplete="off" value={this.state.lastPart} onChange={this.handleChange}/>
+                                                        <div className="uk-width-1-3@s">
+                                                            <input className="uk-input" type="text" placeholder="下の句" name="lastPart" autoComplete="off" value={this.state.lastPart} onChange={this.handleChange}/>
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="uk-margin">
-                                                    <label class="uk-form-label" for="form-stacked-text">かな</label>
-                                                    <div class="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
-                                                        <div class="uk-width-1-3@s">
-                                                            <input class="uk-input" type="text" placeholder="一の句 (かな)" name="firstPartKana" autoComplete="off" value={this.state.firstPartKana} onChange={this.handleChange}/>
+                                                <div className="uk-margin">
+                                                    <label className="uk-form-label" for="form-stacked-text">かな</label>
+                                                    <div className="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
+                                                        <div className="uk-width-1-3@s">
+                                                            <input className="uk-input" type="text" placeholder="一の句 (かな)" name="firstPartKana" autoComplete="off" value={this.state.firstPartKana} onChange={this.handleChange}/>
                                                         </div>
-                                                        <div class="uk-width-1-3@s">
-                                                            <input class="uk-input" type="text" placeholder="二の句 (かな)" name="secondPartKana" autoComplete="off" value={this.state.secondPartKana} onChange={this.handleChange}/>
+                                                        <div className="uk-width-1-3@s">
+                                                            <input className="uk-input" type="text" placeholder="二の句 (かな)" name="secondPartKana" autoComplete="off" value={this.state.secondPartKana} onChange={this.handleChange}/>
                                                         </div>
-                                                        <div class="uk-width-1-3@s">
-                                                            <input class="uk-input" type="text" placeholder="三の句 (かな)" name="thirdPartKana" autoComplete="off" value={this.state.thirdPartKana} onChange={this.handleChange}/>
+                                                        <div className="uk-width-1-3@s">
+                                                            <input className="uk-input" type="text" placeholder="三の句 (かな)" name="thirdPartKana" autoComplete="off" value={this.state.thirdPartKana} onChange={this.handleChange}/>
                                                         </div>
-                                                        <div class="uk-width-1-3@s">
-                                                            <input class="uk-input" type="text" placeholder="四の句 (かな)" name="fourthPartKana" autoComplete="off" value={this.state.fourthPartKana} onChange={this.handleChange}/>
+                                                        <div className="uk-width-1-3@s">
+                                                            <input className="uk-input" type="text" placeholder="四の句 (かな)" name="fourthPartKana" autoComplete="off" value={this.state.fourthPartKana} onChange={this.handleChange}/>
                                                         </div>
-                                                        <div class="uk-width-1-3@s">
-                                                            <input class="uk-input" type="text" placeholder="五の句 (かな)" name="lastPartKana" autoComplete="off" value={this.state.lastPartKana} onChange={this.handleChange}/>
+                                                        <div className="uk-width-1-3@s">
+                                                            <input className="uk-input" type="text" placeholder="五の句 (かな)" name="lastPartKana" autoComplete="off" value={this.state.lastPartKana} onChange={this.handleChange}/>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -968,32 +1181,32 @@ class Search extends Component {
                                         else{
                                             return (
                                             <div>
-                                                <div class="uk-margin">    
-                                                <label class="uk-form-label" for="form-stacked-text">漢字</label>
-                                                    <div class="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
-                                                        <div class="uk-width-1-3@s">
+                                                <div className="uk-margin">    
+                                                <label className="uk-form-label" for="form-stacked-text">漢字</label>
+                                                    <div className="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
+                                                        <div className="uk-width-1-3@s">
                                                             <input className="uk-input" type="text" placeholder="上の句" name="firstPart" autoComplete="off" value={this.state.firstPart} onChange={this.handleChange} />
                                                         </div>
-                                                        <div class="uk-width-1-3@s">
-                                                            <input class="uk-input" type="text" placeholder="中の句" name="secondPart" autoComplete="off" value={this.state.secondPart} onChange={this.handleChange}/>
+                                                        <div className="uk-width-1-3@s">
+                                                            <input className="uk-input" type="text" placeholder="中の句" name="secondPart" autoComplete="off" value={this.state.secondPart} onChange={this.handleChange}/>
                                                         </div>
-                                                        <div class="uk-width-1-3@s">
-                                                            <input class="uk-input" type="text" placeholder="下の句" name="lastPart" autoComplete="off" value={this.state.lastPart} onChange={this.handleChange}/>
+                                                        <div className="uk-width-1-3@s">
+                                                            <input className="uk-input" type="text" placeholder="下の句" name="lastPart" autoComplete="off" value={this.state.lastPart} onChange={this.handleChange}/>
                                                         </div>
                                                     
                                                     </div>
                                                 </div>
-                                                <div class="uk-margin">
-                                                    <label class="uk-form-label" for="form-stacked-text">かな</label>
-                                                    <div class="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
-                                                        <div class="uk-width-1-3@s">
-                                                            <input class="uk-input" type="text" placeholder="上の句 (かな)" name="firstPartKana" autoComplete="off" value={this.state.firstPartKana} onChange={this.handleChange}/>
+                                                <div className="uk-margin">
+                                                    <label className="uk-form-label" for="form-stacked-text">かな</label>
+                                                    <div className="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
+                                                        <div className="uk-width-1-3@s">
+                                                            <input className="uk-input" type="text" placeholder="上の句 (かな)" name="firstPartKana" autoComplete="off" value={this.state.firstPartKana} onChange={this.handleChange}/>
                                                         </div>
-                                                        <div class="uk-width-1-3@s">
-                                                            <input class="uk-input" type="text" placeholder="中の句 (かな)" name="secondPartKana" autoComplete="off" value={this.state.secondPartKana} onChange={this.handleChange}/>
+                                                        <div className="uk-width-1-3@s">
+                                                            <input className="uk-input" type="text" placeholder="中の句 (かな)" name="secondPartKana" autoComplete="off" value={this.state.secondPartKana} onChange={this.handleChange}/>
                                                         </div>
-                                                        <div class="uk-width-1-3@s">
-                                                            <input class="uk-input" type="text" placeholder="下の句 (かな)" name="lastPartKana" autoComplete="off" value={this.state.lastPartKana} onChange={this.handleChange}/>
+                                                        <div className="uk-width-1-3@s">
+                                                            <input className="uk-input" type="text" placeholder="下の句 (かな)" name="lastPartKana" autoComplete="off" value={this.state.lastPartKana} onChange={this.handleChange}/>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1001,19 +1214,34 @@ class Search extends Component {
                                             )
                                         }
                                     })()}
-                                    <div class="uk-margin">
-                                        <label class="uk-form-label" for="form-stacked-text">説明</label>
-                                        <div class="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
-                                            <div class="uk-width-1-1@s">
-                                                <textarea class="uk-textarea" rows="5" placeholder="" name="description" autoComplete="off" value={this.state.description} onChange={this.handleChange}></textarea>
+
+                                    <div className="uk-margin">
+                                        <label className="uk-form-label" for="form-stacked-text">説明(Markdown記法を使用できます)</label>
+                                        <div className="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
+                                            <div className="uk-width-1-1@s">
+                                                <textarea className="uk-textarea" rows="5" placeholder="" name="description" autoComplete="off" value={this.state.description} onChange={this.handleChange}></textarea>
                                             </div>
                                         </div>
+                                        <ul className="uk-margin-remove" uk-accordion="true">
+                                            <li className="uk-margin-left uk-margin-right">
+                                                <a class="uk-accordion-title" href="#"></a>
+                                                <div class="uk-accordion-content">
+                                                    <p>プレビュー</p>
+                                                    <hr/>
+                                                    <ReactMarkdown
+                                                        source={this.state.description}
+                                                    ></ReactMarkdown>
+                                                    <hr/>
+                                                </div>
+                                            </li>
+                                        </ul>
                                     </div>
-                                    <div class="uk-margin">
-                                        <label class="uk-form-label" for="form-stacked-text">所属作品</label>
-                                        <div class="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
+
+                                    <div className="uk-margin">
+                                        <label className="uk-form-label" for="form-stacked-text">所蔵作品</label>
+                                        <div className="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
                                             <div>
-                                            <AsyncSelect
+                                                <AsyncSelect
                                                     value={this.state.collection}
                                                     onChange={e => {
                                                         this.setState({
@@ -1029,10 +1257,50 @@ class Search extends Component {
                                                 />
                                             </div>
                                         </div>
+                                        <ul className="uk-margin-remove" uk-accordion="true">
+                                            <li className="uk-margin-left uk-margin-right">
+                                                <a class="uk-accordion-title" href="#"></a>
+                                                <div class="uk-accordion-content">
+                                                    <hr/>
+                                                    <p>新規所蔵作品の追加</p>
+                                                    
+                                                    <div className="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
+                                                        <div className="uk-width-1-2@s">
+                                                            <label className="uk-form-label" for="form-stacked-text">作品名</label>
+                                                            <input className="uk-input" type="text" placeholder="作品名" name="newCollection" autoComplete="off" value={this.state.newCollection} onChange={this.handleChange} />
+                                                        </div>
+
+                                                        <div className="uk-width-1-2@s">
+                                                            <label className="uk-form-label" for="form-stacked-text">親作品</label>
+                                                            <AsyncSelect
+                                                                value={this.state.newCollectionParent}
+                                                                onChange={e => {
+                                                                    this.setState({
+                                                                        newCollectionParent: {
+                                                                            label: e.label,
+                                                                            value: e.value
+                                                                        }
+                                                                    });
+                                                                }}
+                                                                loadingMessage ={() => "検索中です..."}
+                                                                noOptionsMessage={() => "結果が見つかりませんでした"}
+                                                                loadOptions={this.getSelectCollection}
+                                                            />
+                                                        </div>
+
+                                                        <div className="uk-width-1-1@s">
+                                                            <button className="uk-align-right uk-button uk-button-default uk-text-center" onClick={this.handleNewCollectionFormSubmit}>追加する</button>
+                                                        </div>
+
+                                                    </div>
+                                                    <hr/>
+                                                </div>
+                                            </li>
+                                        </ul>
                                     </div>
-                                    <div class="uk-margin">
-                                        <label class="uk-form-label" for="form-stacked-text">作者</label>
-                                        <div class="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
+                                    <div className="uk-margin">
+                                        <label className="uk-form-label" for="form-stacked-text">作者</label>
+                                        <div className="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
                                             <div>
                                                 <AsyncSelect
                                                     value={this.state.author}
@@ -1050,21 +1318,40 @@ class Search extends Component {
                                                 />
                                             </div>
                                         </div>
+                                        <ul className="uk-margin-remove" uk-accordion="true">
+                                            <li className="uk-margin-left uk-margin-right">
+                                                <a class="uk-accordion-title" href="#"></a>
+                                                <div class="uk-accordion-content">
+                                                    <hr/>
+                                                    <p>新規作者の追加</p>
+                                                    <div className="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
+                                                        <div className="uk-width-1-2@s">
+                                                            <label className="uk-form-label" for="form-stacked-text">作者名</label>
+                                                            <input className="uk-input" type="text" placeholder="作者名" name="newAuthor" autoComplete="off" value={this.state.newAuthor} onChange={this.handleChange} />
+                                                        </div>
+                                                        <div className="uk-width-1-2@s">
+                                                            <button className="uk-align-right uk-button uk-button-default uk-text-center" onClick={this.handleNewAuthorFormSubmit}>追加する</button>
+                                                        </div>
+                                                    </div>
+                                                    <hr/>
+                                                </div>
+                                            </li>
+                                        </ul>
                                     </div>
-                                    <div class="uk-margin">                                                                          
+                                    <div className="uk-margin">                                                                          
                                         {(() => 
                                             {
                                                 if(this.state.mode === "create"){
                                                     if (this.state.target !== "koten"){
                                                         return (
                                                             <div>
-                                                                <label class="uk-form-label" for="form-stacked-text">番号</label>
-                                                                <div class="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
-                                                                    <div class="uk-width-1-3@s">
-                                                                        <input class="uk-input" type="number" placeholder="" name="number" autoComplete="off" value={this.state.number} onChange={this.handleChange}/>
+                                                                <label className="uk-form-label" for="form-stacked-text">番号</label>
+                                                                <div className="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
+                                                                    <div className="uk-width-1-3@s">
+                                                                        <input className="uk-input" type="number" placeholder="" name="number" autoComplete="off" min="1" value={this.state.number} onChange={this.handleChange}/>
                                                                     </div>
                                                                     <div>
-                                                                        <button class="uk-align-right uk-button uk-button-default uk-text-center">追加する</button>
+                                                                        <button className="uk-align-right uk-button uk-button-default uk-text-center">追加する</button>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -1072,7 +1359,7 @@ class Search extends Component {
                                                     }
                                                     else{
                                                         return (
-                                                            <button class="uk-align-right uk-button uk-button-default uk-text-center">追加する</button>
+                                                            <button className="uk-align-right uk-button uk-button-default uk-text-center">追加する</button>
                                                         )                                                        
                                                     }
                                                     
@@ -1081,13 +1368,13 @@ class Search extends Component {
                                                     if (this.state.target !== "koten"){
                                                         return (
                                                             <div>
-                                                                <label class="uk-form-label" for="form-stacked-text">番号</label>
-                                                                <div class="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
-                                                                    <div class="uk-width-1-3@s">
-                                                                        <input class="uk-input" type="number" placeholder="" name="number" autoComplete="off" value={this.state.number} onChange={this.handleChange}/>
+                                                                <label className="uk-form-label" for="form-stacked-text">番号</label>
+                                                                <div className="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
+                                                                    <div className="uk-width-1-3@s">
+                                                                        <input className="uk-input" type="number" placeholder="" name="number" autoComplete="off" value={this.state.number} onChange={this.handleChange}/>
                                                                     </div>
                                                                     <div>
-                                                                         <button class="uk-align-right uk-button uk-button-default uk-text-center">更新する</button>
+                                                                         <button className="uk-align-right uk-button uk-button-default uk-text-center">更新する</button>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -1095,7 +1382,7 @@ class Search extends Component {
                                                     }
                                                     else{
                                                         return (
-                                                            <button class="uk-align-right uk-button uk-button-default uk-text-center">更新する</button>
+                                                            <button className="uk-align-right uk-button uk-button-default uk-text-center">更新する</button>
                                                         )                                                        
                                                     }
                                                 }
