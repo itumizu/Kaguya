@@ -1,0 +1,33 @@
+{% if pageObject.paginator.page_range|length > 1 %}
+    {% load proper_paginate %}
+
+    <ul class="uk-pagination uk-flex-center">
+        {% if pageObject.number != 1 %}
+            <li><a class="page-link" href="?q={{query}}&target={{target}}&page=1">1</a></li>
+        {% endif %}
+
+        {% if pageObject.has_previous %}
+            <li><a class="page-link" href="?q={{query}}&target={{target}}&page={{pageObject.previous_page_number}}">&lt;</a></li>
+        {% else %}
+            <li class="disabled"><span>&lt;</span></li>
+        {% endif %}
+
+        {% for i in paginator|proper_paginate:pageObject.number %}
+            {% if pageObject.number == i %}
+                <li class="uk-active"><span>{{ i }} <span class="sr-only"></span></span></li>
+            {% else %}
+                <li><a class="page-link" href="?q={{query}}&target={{target}}&page={{i}}">{{ i }}</a></li>
+            {% endif %}
+        {% endfor %}
+
+        {% if pageObject.has_next %}
+            <li><a class="page-link" href="?q={{query}}&target={{target}}&page={{pageObject.next_page_number}}">&gt;</a></li>
+        {% else %}
+            <li class="disabled"><span>&gt;</span></li>
+        {% endif %}
+
+        {% if pageObject.number != paginator.num_pages %}
+            <li><a class="page-link" href="?q={{query}}&target={{target}}&page={{paginator.num_pages}}">{{paginator.num_pages}}</a></li>
+        {% endif %}
+    </ul>
+{% endif %}

@@ -1,0 +1,102 @@
+@mixin media($a: false, $b: false, $c: false)
+    $value: large
+
+    @if($a == $value or $b == $value or $c == $value)
+        @media only screen and (min-width: 900px)
+            @content;
+        
+
+    $value: medium;
+    @if($a == $value or $b == $value or $c == $value)
+        @media only screen and (max-width: 899px) and (min-width: 750px)
+            @content;
+        
+    
+
+    $value: small;
+    @if($a == $value or $b == $value or $c == $value)
+        @media only screen and (max-width: 749px) 
+            @content;
+
+html 
+    visibility: hidden;
+
+html.wf-active,
+html.loading-delay 
+    visibility: visible;
+
+.topLogo 
+    font-family: a-otf-ryumin-pr6n, serif; font-style: normal; 
+    font-size: calc(250.5% + 4vw);
+
+.kaguya 
+    font-family: a-otf-ryumin-pr6n, serif; font-style: normal; 
+    font-weight: 300;
+
+.uk-logo
+    font-size: calc(100% + 2vw); 
+    font-family: a-otf-ryumin-pr6n, serif; font-style: normal; 
+    font-weight: bolder; 
+    color: #000000;
+
+.loginLogo
+    font-size: calc(150% + 3vw); 
+    font-family: a-otf-ryumin-pr6n, serif; font-style: normal; 
+    font-weight: bolder; 
+    color: #000000;
+    text-align: center;
+
+.largeText
+    font-size: calc(100% + 0.9vw);
+
+.badgeText 
+    font-size: calc(60% + 0.6vw);
+    text-decoration: none;
+    text-align: center;
+    padding: 4px 6px 4px;
+    color: #ffffff;
+    background: #68be8d;
+    border-radius: 3px;
+    
+    &:hover
+        color: #335719
+        text-decoration: none;
+
+.login
+    background: #89c3eb;
+    color: #ffffff;
+    font-size: calc(100% + 0.4vw);
+
+.ReactModal__Html--open,
+.ReactModal__Body--open 
+  overflow: hidden;
+
+
+.ReactModal__Overlay
+  position: fixed;
+  z-index: 999999;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+.ReactModal__Content
+    background: white;
+    outline: none;
+    
+    @include media(large, medium)
+        max-width: calc(100vw - 2rem);
+        max-height: calc(100vh - 2rem);
+        width: 50rem;
+    
+    @include media(small)
+        width: 100%;
+        height: 100%;
+
+    box-shadow: 0 0 34px 0 rgba(0, 0, 0, 0.24);
+    overflow-y: auto;
+    position: relative;
