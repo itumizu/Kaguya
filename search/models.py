@@ -1,12 +1,23 @@
+import uuid
+
 from django.db import models
 from django.core.validators import MinValueValidator
 from markdownx.models import MarkdownxField
+from users.models import User
 
 class Collection(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
     name = models.CharField(verbose_name='作品名', max_length=100, blank=False, null=False)
-    parent = models.ForeignKey("self", verbose_name='親作品名', blank=True, null=True, on_delete=models.PROTECT)
+    parent = models.ForeignKey("self", verbose_name='親作品名', blank=True, null=True, on_delete=models.PROTECT, related_name='childCollection')
     description =  MarkdownxField('説明', help_text='Markdown形式で記述できます。', default="", blank=True, null=True)
     
+    created_at = models.DateTimeField(verbose_name='作成日時', auto_now_add=True)
+    updated_at = models.DateTimeField(verbose_name='更新日時', auto_now=True) 
+    
+    created_by = models.ForeignKey(User, verbose_name='作成者', null= True, blank= True, on_delete=models.PROTECT, related_name = "created_collection_user")
+    updated_by = models.ForeignKey(User, verbose_name='更新者', null= True, blank= True, on_delete=models.PROTECT, related_name = "updated_collection_user")
+
     def __str__(self):
         if self.parent:
             return self.parent.name + " : " + self.name
@@ -19,9 +30,17 @@ class Collection(models.Model):
         unique_together = ('name', 'parent')
 
 class Author(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
     name = models.CharField(verbose_name='作者名', max_length=100, unique=True, blank=False, null=False)
     description =  MarkdownxField('説明', help_text='Markdown形式で記述できます。', default="", blank=True, null=True)
+    
+    created_at = models.DateTimeField(verbose_name='作成日時', auto_now_add=True)
+    updated_at = models.DateTimeField(verbose_name='更新日時', auto_now=True)
 
+    created_by = models.ForeignKey(User, verbose_name='作成者', null= True, blank= True, on_delete=models.PROTECT, related_name = "created_author_user")
+    updated_by = models.ForeignKey(User, verbose_name='更新者', null= True, blank= True, on_delete=models.PROTECT, related_name = "updated_author_user")
+    
     def __str__(self):
         return self.name
 
@@ -30,10 +49,17 @@ class Author(models.Model):
         verbose_name_plural = '作者'
     
 class Year(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
     jpnYear = models.CharField(verbose_name='和暦', max_length=100, unique=True, blank=False, null=False)
 
     adYear = models.IntegerField(verbose_name='西暦', validators=[MinValueValidator(1)], unique=True, blank=True, null=True)
-
+    
+    created_at = models.DateTimeField(verbose_name='作成日時', auto_now_add=True)
+    updated_at = models.DateTimeField(verbose_name='更新日時', auto_now=True)
+    
+    created_by = models.ForeignKey(User, verbose_name='作成者', null= True, blank= True, on_delete=models.PROTECT, related_name = "created_year_user")
+    updated_by = models.ForeignKey(User, verbose_name='更新者', null= True, blank= True, on_delete=models.PROTECT, related_name = "updated_year_user")
     def __str__(self):
         if self.adYear:
             return self.jpnYear + " (" + self.adYear + ")"
@@ -47,6 +73,8 @@ class Year(models.Model):
         unique_together = ('jpnYear', 'adYear', )
 
 class Haikai(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
     number =  models.IntegerField(verbose_name='番号', validators=[MinValueValidator(1)], 
                             blank=False, null=False)
 
@@ -73,6 +101,12 @@ class Haikai(models.Model):
     collection = models.ForeignKey(Collection, verbose_name='所蔵作品', on_delete=models.PROTECT)
     year = models.ForeignKey(Year, verbose_name='発表年', blank=True, null=True, on_delete=models.PROTECT)
     
+    created_at = models.DateTimeField(verbose_name='作成日時', auto_now_add=True)
+    updated_at = models.DateTimeField(verbose_name='更新日時', auto_now=True)
+
+    created_by = models.ForeignKey(User, verbose_name='作成者', null= True, blank= True, on_delete=models.PROTECT, related_name = "created_haikai_user")
+    updated_by = models.ForeignKey(User, verbose_name='更新者', null= True, blank= True, on_delete=models.PROTECT, related_name = "updated_haikai_user")
+    
     def __str__(self):
         if not self.firstPart:
             return str(self.firstPartKana) + " " + str(self.secondPartKana) + " " + str(self.lastPartKana)
@@ -88,6 +122,10 @@ class Haikai(models.Model):
         )
 
 class Tanka(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    number =  models.IntegerField(verbose_name='番号', validators=[MinValueValidator(1)], 
+                            blank=False, null=False)
 
     firstPart = models.CharField(verbose_name='初句', max_length=50,
                             blank=True, null=True)
@@ -123,6 +161,12 @@ class Tanka(models.Model):
     author = models.ForeignKey(Author, verbose_name='作者名', blank=True, null=True, on_delete=models.PROTECT)
     collection = models.ForeignKey(Collection, verbose_name='所蔵作品', on_delete=models.PROTECT)    
     year = models.ForeignKey(Year, verbose_name='発表年', blank=True, null=True, on_delete=models.PROTECT)
+    
+    created_at = models.DateTimeField(verbose_name='作成日時', auto_now_add=True)
+    updated_at = models.DateTimeField(verbose_name='更新日時', auto_now=True)
+
+    created_by = models.ForeignKey(User, verbose_name='作成者', null= True, blank= True, on_delete=models.PROTECT, related_name = "created_tanka_user")
+    updated_by = models.ForeignKey(User, verbose_name='更新者', null= True, blank= True, on_delete=models.PROTECT, related_name = "updated_tanka_user")
 
     def __str__(self):
         if not self.firstPart:
@@ -140,12 +184,20 @@ class Tanka(models.Model):
         )
     
 class Koten(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    
     text =  MarkdownxField('本文', help_text='Markdown形式で記述できます。', default="", blank=False, null=False)
     description =  MarkdownxField('説明', help_text='Markdown形式で記述できます。', default="", blank=True, null=True)
 
     author = models.ForeignKey(Author, verbose_name='作者名', blank=True, null=True, on_delete=models.PROTECT)
     collection = models.ForeignKey(Collection, verbose_name='所蔵作品', on_delete=models.PROTECT)
     year = models.ForeignKey(Year, verbose_name='発表年', blank=True, null=True, on_delete=models.PROTECT)
+    
+    created_at = models.DateTimeField(verbose_name='作成日時', auto_now_add=True)
+    updated_at = models.DateTimeField(verbose_name='更新日時', auto_now=True)
+
+    created_by = models.ForeignKey(User, verbose_name='作成者', null= True, blank= True, on_delete=models.PROTECT, related_name = "created_koten_user")
+    updated_by = models.ForeignKey(User, verbose_name='更新者', null= True, blank= True, on_delete=models.PROTECT, related_name = "updated_koten_user")
 
     def __str__(self):
         return self.text

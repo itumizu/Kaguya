@@ -1,0 +1,22 @@
+{
+  "lang": "ja-jp",
+  "name": "かぐや",
+  "short_name": "かぐや",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "android-icon-192x192.png",
+      "sizes": "192×192",
+      "type": "image/png"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#044182",
+  "background_color": "#044182",
+  "description": "日本語古典資料検索システム"
+}

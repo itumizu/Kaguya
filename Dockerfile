@@ -23,7 +23,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY manage.py /system/manage.py
 ADD manage.py /system/manage.py
 
-ADD run.sh /run.sh
+ADD run.sh /system
 
 ADD . /system
 COPY . /system
