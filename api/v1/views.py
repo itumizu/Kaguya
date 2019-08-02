@@ -17,6 +17,12 @@ class HaikaiViewSet(viewsets.ModelViewSet):
             return HaikaiListSerializer
         return HaikaiSerializer
 
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user, updated_by=self.request.user)
+    
+    def perform_update(self, serializer):
+        serializer.save(updated_by=self.request.user)
+
 class TankaViewSet(viewsets.ModelViewSet):
     queryset = Tanka.objects.all()
     filter_class = TankaFilter
@@ -25,6 +31,12 @@ class TankaViewSet(viewsets.ModelViewSet):
         if self.request.method in ['GET']:
             return TankaListSerializer
         return TankaSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user, updated_by=self.request.user)
+
+    def perform_update(self, serializer):
+        serializer.save(updated_by=self.request.user)
 
 class KotenViewSet(viewsets.ModelViewSet):
     queryset = Koten.objects.all()
@@ -35,6 +47,12 @@ class KotenViewSet(viewsets.ModelViewSet):
             return KotenListSerializer
         return KotenSerializer
 
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user, updated_by=self.request.user)
+
+    def perform_update(self, serializer):
+        serializer.save(updated_by=self.request.user)
+
 class CollectionViewSet(viewsets.ModelViewSet):
     queryset = Collection.objects.all()
     filter_class = CollectionFilter
@@ -43,16 +61,40 @@ class CollectionViewSet(viewsets.ModelViewSet):
         if self.request.method in ['GET']:
             return CollectionListSerializer
         return CollectionSerializer
+    
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user, updated_by=self.request.user)
+
+    def perform_update(self, serializer):
+        serializer.save(updated_by=self.request.user)
 
 class AuthorViewSet(viewsets.ModelViewSet):
     queryset = Author.objects.all()
     serializer_class = AuthorSerializer
     filter_class = AuthorFilter
 
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user, updated_by=self.request.user)
+
+    def perform_update(self, serializer):
+        serializer.save(updated_by=self.request.user)
+
 class YearViewSet(viewsets.ModelViewSet):
     queryset = Year.objects.all()
     serializer_class = YearSerializer
 
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user, updated_by=self.request.user)
+
+    def perform_update(self, serializer):
+        serializer.save(updated_by=self.request.user)
+        
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user, updated_by=self.request.user)
+    
+    def perform_update(self, serializer):
+        serializer.save(updated_by=self.request.user)

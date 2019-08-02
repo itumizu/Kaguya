@@ -17,7 +17,7 @@ class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Author
         fields = '__all__'
-        read_only_fields = ('created_at', 'updated_at')
+        read_only_fields = ('created_at', 'updated_at', 'created_by', 'updated_by')
 
 class CollectionListSerializer(serializers.ModelSerializer):
     childCollection = RecursiveField(many=True)
@@ -32,45 +32,44 @@ class CollectionListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Collection
         fields = '__all__'
-        read_only_fields = ('created_at', 'updated_at')
+        read_only_fields = ('created_at', 'updated_at', 'created_by', 'updated_by')
 
 class CollectionSerializer(serializers.ModelSerializer):   
     class Meta:
         model = Collection
         fields = '__all__'
-        read_only_fields = ('created_at', 'updated_at')
+        read_only_fields = ('created_at', 'updated_at', 'created_by', 'updated_by')
 
 class YearSerializer(serializers.ModelSerializer):
     class Meta:
         model = Year
         fields = '__all__'
-        read_only_fields = ('created_at', 'updated_at')
+        read_only_fields = ('created_at', 'updated_at', 'created_by', 'updated_by')
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
-        read_only_fields = ('created_at', 'updated_at')
+        read_only_fields = ('created_at', 'updated_at', 'created_by', 'updated_by')
 
 class HaikaiSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Haikai
         fields = '__all__'
-        read_only_fields = ('created_at', 'updated_at')
+        read_only_fields = ('created_at', 'updated_at', 'created_by', 'updated_by')
 
 class TankaSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tanka
         fields = '__all__'
-        read_only_fields = ('created_at', 'updated_at')
+        read_only_fields = ('created_at', 'updated_at', 'created_by', 'updated_by')
 
 class KotenSerializer(serializers.ModelSerializer):
     class Meta:
         model = Koten
         fields = '__all__'
-        read_only_fields = ('created_at', 'updated_at')
+        read_only_fields = ('created_at', 'updated_at', 'created_by', 'updated_by')
 
 class HaikaiListSerializer(HaikaiSerializer):
     collection = CollectionListSerializer()
