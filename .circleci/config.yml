@@ -27,13 +27,17 @@ jobs:
           command: docker-compose run react yarn --cwd ./kaguya build
 
       - run:
+          name: docker-compose run django python manage.py check --deploy
+          command: docker-compose run django python manage.py check --deploy
+
+      - run:
           name: docker-compose up
           command: docker-compose up -d
           
       - run:
           name: docker-compose down
           command: docker-compose down
-
+          
   deploy:
     machine:
       image: circleci/classic:edge
