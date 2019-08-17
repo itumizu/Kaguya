@@ -3,7 +3,7 @@ import axios from 'axios';
 
 export default class AuthService {
     constructor(domain) {
-        this.domain = domain || 'http://localhost'
+        this.domain = domain || process.env.REACT_APP_DEPLOYURL
         this.post = this.post.bind(this)
         this.login = this.login.bind(this)
     }
