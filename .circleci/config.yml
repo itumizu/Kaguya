@@ -8,11 +8,11 @@ jobs:
       - checkout
       - run:
           name: Decode env file
-          command: echo $ENV_FILE | base64 --decode > ~/.env
+          command: echo $ENV_FILE | base64 --decode > .env
 
       - run:
           name: Decode env file
-          command: echo $ENV_FILE | base64 --decode > ~/react/kaguya/.env
+          command: echo $ENV_FILE | base64 --decode > react/kaguya/.env
 
       - run:
           name: docker-compose build
