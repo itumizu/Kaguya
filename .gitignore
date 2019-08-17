@@ -106,7 +106,13 @@ media/
 
 nginx/log
 nginx/cert
+nginx/nginx_deploy.conf
+
+docker-compose_deploy.yml
 
 static/css/style.css
 static/css/style.css.map
+
 data.csv
+data/
+dbdata/
