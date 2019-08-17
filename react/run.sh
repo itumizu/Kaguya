@@ -1,2 +1,0 @@
-cd 'kaguya'
-yarn start

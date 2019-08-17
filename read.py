@@ -30,4 +30,4 @@ def readFile(path):
             
     return
 
-readFile('data.csv')
+readFile('data_haikai.csv')
