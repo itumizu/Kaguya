@@ -3,6 +3,7 @@ jobs:
   build:
     machine:
       image: circleci/classic:edge
+    working_directory: ~/project
     steps:
       - checkout
       - run:
@@ -41,7 +42,6 @@ jobs:
       - add_ssh_keys:
           fingerprints:
             - $FINGER_PRINT
-
       - run:
           name: Start ssh-keyscan
           command: ssh-keyscan $SSH_HOST >> ~/.ssh/known_hosts
