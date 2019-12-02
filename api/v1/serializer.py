@@ -5,7 +5,7 @@ from rest_framework import serializers
 from rest_framework.serializers import SerializerMethodField
 from django_filters import rest_framework as filters
 
-from search.models import Haikai, Tanka, Koten, Author, Collection, Year
+from search.models import Haikai, Tanka, Koten, Author, Collection, Year, Notice
 from users.models import User
 
 class RecursiveField(serializers.Serializer):
@@ -95,16 +95,18 @@ class KotenListSerializer(KotenSerializer):
 
 
 class HaikaiFilter(filters.FilterSet):
-
     # フィルタの定義
     # firstPart = filters.CharFilter(lookup_expr='contains')
     # secondPart = filters.CharFilter(lookup_expr='contains')
     # lastPart = filters.CharFilter(lookup_expr='contains')
+
     query = filters.CharFilter(field_name='query', method='search', label="query")
+    author = filters.CharFilter(field_name='author', method='searchByAuthor', label="author")
+    collection = filters.UUIDFilter(field_name='collection', method='searchByCollection', label="collection")
 
     class Meta:
         model = Haikai
-        fields = ['query']
+        fields = ['query', 'author', 'collection']
     
     def search(self, queryset, name, value):
         words = re.split(r"\s", value)
@@ -116,9 +118,19 @@ class HaikaiFilter(filters.FilterSet):
 
         return queryset.filter(query).select_related('author', 'collection', 'collection__parent')
     
+    def searchByCollection(self, queryset, name, value):
+        query = Q(collection__id=value)
+        return queryset.filter(query).select_related('author', 'collection', 'collection__parent')
+    
+    def searchByAuthor(self, queryset, name, value):
+        query = Q(author__id=value)
+        return queryset.filter(query).select_related('author', 'collection', 'collection__parent')
+
 class TankaFilter(filters.FilterSet):
     query = filters.CharFilter(field_name='query', method='search', label="query")
-    
+    author = filters.CharFilter(field_name='author', method='searchByAuthor', label="author")
+    collection = filters.UUIDFilter(field_name='collection', method='searchByCollection', label="collection")
+
     class Meta:
         model = Tanka
         fields = ['query']
@@ -133,9 +145,19 @@ class TankaFilter(filters.FilterSet):
 
         return queryset.filter(query).select_related('author', 'collection', 'collection__parent')
 
+    def searchByCollection(self, queryset, name, value):
+        query = Q(collection__id=value)
+        return queryset.filter(query).select_related('author', 'collection', 'collection__parent')
+    
+    def searchByAuthor(self, queryset, name, value):
+        query = Q(author__id=value)
+        return queryset.filter(query).select_related('author', 'collection', 'collection__parent')
+
 class KotenFilter(filters.FilterSet):
     query = filters.CharFilter(field_name='query', method='search', label="query")
-
+    author = filters.CharFilter(field_name='author', method='searchByAuthor', label="author")
+    collection = filters.UUIDFilter(field_name='collection', method='searchByCollection', label="collection")
+    
     class Meta:
         model = Koten
         fields = ['query']
@@ -148,6 +170,14 @@ class KotenFilter(filters.FilterSet):
         for item in queries:
             (query) &= item
 
+        return queryset.filter(query).select_related('author', 'collection', 'collection__parent')
+
+    def searchByCollection(self, queryset, name, value):
+        query = Q(collection__id=value)
+        return queryset.filter(query).select_related('author', 'collection', 'collection__parent')
+    
+    def searchByAuthor(self, queryset, name, value):
+        query = Q(author__id=value)
         return queryset.filter(query).select_related('author', 'collection', 'collection__parent')
 
 class CollectionFilter(filters.FilterSet):
