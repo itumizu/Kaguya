@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Collection, Author, Year, Haikai, Tanka, Koten
+from .models import Collection, Author, Year, Haikai, Tanka, Koten, Notice
 from markdownx.admin import MarkdownxModelAdmin
 
 class CollectionInline (admin.TabularInline):
@@ -45,3 +45,9 @@ class KotenAdmin(MarkdownxModelAdmin):
     list_display = ('text', 'description', 'collection', 'author', 'year',)
     search_fields = ('text', 'description', 'collection__name', 'collection__parent__name', )
     readonly_fields=('id', 'created_at', 'updated_at')
+
+@admin.register(Notice)
+class NoticeAdmin(admin.ModelAdmin):
+    list_display = ('title', 'created_at', 'updated_at',)
+    search_fields = ('title', 'body', 'created_at', 'updated_at', )
+    readonly_fields=('uuid', 'created_at', 'updated_at', )
