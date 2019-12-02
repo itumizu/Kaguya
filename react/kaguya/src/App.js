@@ -8,7 +8,7 @@ class App extends Component {
     super(props);
     this.handleChange = this.handleChange.bind(this);
     this.handleFormSubmit = this.handleFormSubmit.bind(this);
-    console.log(props)
+    document.title = "かぐや"
   }
 
   handleChange(e){
@@ -35,6 +35,7 @@ class App extends Component {
                   <a className="uk-navbar-toggle" uk-navbar-toggle-icon="true" />
                   <div className="uk-navbar-dropdown">
                       <ul className="uk-nav uk-navbar-dropdown-nav">
+                        <li><Link to='/notice'>お知らせ</Link></li>
                         <li><Link to='/logout'>ログアウト</Link></li>
                       </ul>
                   </div>

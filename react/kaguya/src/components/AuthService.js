@@ -52,7 +52,6 @@ export default class AuthService {
         let nowTime = Math.round((new Date()).getTime() / 1000);
 
         if (exp > nowTime && Math.abs(exp - nowTime) <= 60){
-            console.log("更新が近いから更新するよ")
             let refreshToken = this.getRefreshToken()
             if (refreshToken === undefined || refreshToken === null){
                 return false;
@@ -67,20 +66,19 @@ export default class AuthService {
             }
         }
 
-        return fetch(`${this.domain}/api/v1/auth/verify/`, {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
+        return axios.post(`${this.domain}/api/v1/auth/verify/`, 
+            JSON.stringify({
                 token
-            })
-        }).catch({
-
-        })
+            }),
+            {
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+            }
+        )
         .then(res => {
-            if (res.ok){
+            if (res.status === 200){
                 return true;
             }
             else{
@@ -98,6 +96,9 @@ export default class AuthService {
                 }
             }
         })
+        .catch((error) => {
+            console.log(error)
+        });
     }
 
     setToken(res) {    
@@ -105,21 +106,21 @@ export default class AuthService {
         localStorage.setItem('refreshToken', res.refresh)
     }
 
-    refreshToken(token){        
-        return fetch(`${this.domain}/api/v1/auth/refresh/`, {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
+    refreshToken(token){
+        return axios.post(`${this.domain}/api/v1/auth/refresh/`, 
+            JSON.stringify({
                 refresh: token
-            })
-        })
-        .then(res => res.json())
+            }),
+            {
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+            }
+        )
         .then(res => {
-            if (res.ok){
-                localStorage.setItem('accessToken', res.access)
+            if (res.status === 200){
+                localStorage.setItem('accessToken', res.data.access)
                 localStorage.setItem('refreshToken', token)
                 return true
             }
@@ -128,8 +129,10 @@ export default class AuthService {
                 localStorage.removeItem('accessToken');
                 return false
             }
-
         })
+        .catch((error) => {
+            console.log(error)
+        });
     }
 
     getToken() {
@@ -167,7 +170,7 @@ export default class AuthService {
             ...options
         })
         .then((response) => {
-            console.log(response)
+            // console.log(response)
             return response.data
         })
         .catch((e) => {
@@ -192,7 +195,7 @@ export default class AuthService {
             ...options
         })
         .then((response) => {
-            console.log(response)
+            // console.log(response)
             return response.data
         })
         .catch((e) => {
@@ -217,7 +220,7 @@ export default class AuthService {
             ...options
         }, data)
         .then((response) => {
-            console.log(response)
+            // console.log(response)
             return response.data
         })
         .catch((e) => {

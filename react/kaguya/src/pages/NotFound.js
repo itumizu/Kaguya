@@ -5,6 +5,7 @@ import { BrowserRouter, Route, Link } from 'react-router-dom'
 class NotFound extends Component {
   constructor(props){
     super(props);
+    document.title = "ページが存在しません - かぐや"
   }
   render() {
     return (

@@ -8,13 +8,18 @@ export default function withAuth(AuthComponent) {
     return class AuthWrapped extends Component {
         constructor(props) {
             super(props);
-            // console.log("withAuthだよ")
+
             this.state = {
                 user: null
             };
 
             if (!Auth.loggedIn()) {
-                this.props.history.replace('/login')
+                let redirectUrl = "redirect_after_login=" + this.props.history.location.pathname + this.props.history.location.search
+                
+                this.props.history.replace({
+                    pathname: '/login',
+                    search: redirectUrl
+                })
             }
             else {
                 try {
