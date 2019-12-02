@@ -7,19 +7,23 @@ import AsyncSelect from 'react-select/async';
 import moment from "moment";
 
 import withAuth from '../withAuth'
-import AuthService from './AuthService';
+import AuthService from '../components/AuthService';
 import '../css/style.sass';
-import UIkit from 'uikit';
 
 class Search extends Component {
     constructor(props){
         super(props);
 
-        let targets = ['haikai', 'tanka', 'koten']
-
         this.state = {
+            targets: ['haikai', 'tanka', 'koten'],
+            targetName: ["俳諧", '短歌', "古典"],
             q: "",
+            query: "",
             target: "haikai",
+            targetCollection: null,
+            targetAuthor: null,
+            displayCollection: "",
+            displayAuthor: "",
             page: null,
             list: null,
             displayList: false,
@@ -53,7 +57,8 @@ class Search extends Component {
             newAuthor: "",
             newAuthorDescription: ""
         };
-
+        
+        this.search = this.search.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleFormSubmit = this.handleFormSubmit.bind(this);
         this.handleEditFormSubmit = this.handleEditFormSubmit.bind(this);
@@ -61,113 +66,152 @@ class Search extends Component {
         this.handleNewAuthorFormSubmit = this.handleNewAuthorFormSubmit.bind(this);
         this.getSelectAuthor = this.getSelectAuthor.bind(this);
         this.getSelectCollection = this.getSelectCollection.bind(this);
+        this.changeSearchCriteria = this.changeSearchCriteria.bind(this);
         this.openModal = this.openModal.bind(this);
         this.closeModal = this.closeModal.bind(this);
 
         this.Auth = new AuthService();
-        
 
         if (props.history.location.search){
             let q = queryString.parse(props.history.location.search)
             if ('q' in q){
+                this.state.q = q['q']
+                this.state.query = q['q']
+
                 if ('page' in q && !isNaN(q['page'])){
-                    this.state['q'] = q['q']
-                    this.state['page'] = q['page']
+                    this.state.page = q['page']
                 }
                 else{
-                    this.state['q'] = q['q']
-                    this.state['page'] = q['page']     
+                    this.state.page = 1;
                 }
             }
 
             if ('target' in q){
-                if (q['target'] !== "" && targets.indexOf(q['target']) >= 0){
-                    this.state['target'] = q['target']
+                if (q['target'] !== "" && this.state.targets.indexOf(q['target']) >= 0){
+                    this.state.target = q['target']
                 }
                 else{
-                    this.state['target'] = "haikai";
+                    this.state.target = "haikai";
                 }
             }
             else{
-                this.state['target'] = "haikai";
+                this.state.target = "haikai";
+            }
+
+            if ('collection' in q){
+                this.state.targetCollection = q.collection
+                this.getCollectionInfo(q.collection)
+            }
+            else{
+                this.state.targetCollection = null
+                this.state.displayCollection = ""
+            }
+
+            if ('author' in q){
+                this.state.targetAuthor = q.author;
+                this.getAuthorInfo(q.author)
+            }
+            else{
+                this.state.targetAuthor = null
+                this.state.displayAuthor= ""
             }
 
             if (this.state.q !== ""){
                 this.search(this.state.q, this.state.target, this.state.page)
             }
             else{
-                this.state["displayList"] = true
+                if (q.author !== "" || q.collection !== "" || q.author !== null || q.collection !== null){
+                    this.search(this.state.q, this.state.target, this.state.page)
+                    this.state.displayList = true
+                }
+                else{
+                    this.state.displayList = false
+                }
             }
         }
 
         props.history.listen((location, action) => {
-            if (location.pathname !== "/edit"){
-                if (location.search){
-                    let q = queryString.parse(location.search)
-                    if ('q' in q){
-                        if ('page' in q && !isNaN(q['page'])){
-                            this.state['q'] = q['q']
-                            this.state['page'] = q['page']   
+            if (action === 'POP'){
+                if (location.pathname !== "/edit"){
+                    if (location.search){
+                        let q = queryString.parse(location.search)
+                        if ('q' in q){
+                            this.state.q = q['q']
+                            this.state.query = q['q']
+
+                            if ('page' in q && !isNaN(q['page'])){
+                                this.state.page = q['page']
+                            }
+                            else{
+                                this.state.page = 1;
+                            }
+                        }
+                        if ('target' in q){
+                            if (q['target'] !== "" && this.state.targets.indexOf(q['target']) >= 0){
+                                this.state.target = q['target']
+                            }
+                            else{
+                                this.state.target = "haikai";
+                            }
                         }
                         else{
-                            this.state['q'] = q['q']
-                            this.state['page'] = 1
+                            this.state.target = "haikai";
                         }
-                    }
-                    if ('target' in q){
-                        if (q['target'] !== "" && targets.indexOf(q['target']) >= 0){
-                            this.state['target'] = q['target']
+
+                        if ('collection' in q){
+                            this.state.targetCollection = q.collection
+                            this.getCollectionInfo(q.collection)
                         }
                         else{
-                            this.state['target'] = "haikai";
+                            this.state.targetCollection = null
+                            this.state.displayCollection = ""
+                        }
+            
+                        if ('author' in q){
+                            this.state.targetAuthor = q.author;
+                            this.getAuthorInfo(q.author)
+                        }
+                        else{
+                            this.state.targetAuthor = null
+                            this.state.displayAuthor = ""
+                        }
+
+                        if (this.state.q !== ""){
+                            this.search(this.state.q, this.state.target, this.state.page)
+                        }
+                        else{
+                            if (q.author !== "" || q.collection !== "" || q.author !== null || q.collection !== null){
+                                this.search(this.state.q, this.state.target, this.state.page, null, "replace")
+                            }
+                            else{
+                                // this.state.displayList = true
+    
+                                this.setState({
+                                    q: "",
+                                    query: "",
+                                    page: null,
+                                    list: null,
+                                    paginationList: null,
+                                    count: null,
+                                    displayList: true
+                                })
+                            }
                         }
                     }
-                    else{
-                        this.state['target'] = "haikai";
-                    }
-                }
-                if (this.state.q !== ""){
-                    this.search(this.state.q, this.state.target, this.state.page)
-                }
-                else{
-                    this.setState({
-                        q: "",
-                        page: null,
-                        list: null,
-                        paginationList: null,
-                        count: null,
-                        displayList: true
-                    })
                 }
             }
         })
 
-        if (this.props.history.location.pathname === "/edit" && this.state.modal !== true){
-            this.props.history.goBack()
-        }
+        document.title = this.state.q + "(" + this.state.targetName[this.state.targets.indexOf(this.state.target)] + ") - かぐや";
     }
 
-    openModal() {
-        this.setState({modal: true});
-    }
-
-    closeModal() {
-        this.setState({
-            modal: false,
-            editData: null
-        });
-        this.props.history.goBack()
-    }
-
-    search(query, target, page=1){
+    search(query, target, page=1, criteriaData=null, mode){
+        let criteriaCheck = false
         let offset = (page - 1) * 50
         let limit = 50
 
         if(isNaN(page)){
-            this.props.history.push({
-                pathname: '/search',
-                search: `?q=${this.state.q}`,
-            })
+            page = 1
         }
         else{
             if (page !== 1){
@@ -179,28 +223,149 @@ class Search extends Component {
                 }
             }
         }
+       
+        let requestURL = `${this.Auth.domain}/api/v1/${target}/?query=${query}&offset=${offset}&limit=${limit}`
 
-        if (target === "tanka"){
-            return this.Auth.get(`${this.Auth.domain}/api/v1/tanka/?query=${query}&offset=${offset}&limit=${limit}`)
-            .then(res => {
-                this.renderResult(res, target, page)
-                return res
-            })
-        }
-        else if (target === "koten"){
-            return this.Auth.get(`${this.Auth.domain}/api/v1/koten/?query=${query}&offset=${offset}&limit=${limit}`)
-            .then(res => {
-                this.renderResult(res, target, page)
-                return res
-            })
+        if (criteriaData === null){
+            if (this.state.targetCollection){
+                requestURL += `&collection=${this.state.targetCollection}`
+                criteriaCheck = true
+            }
+            if (this.state.targetAuthor){
+                requestURL += `&author=${this.state.targetAuthor}`
+                criteriaCheck = true
+            }
         }
         else{
-            return this.Auth.get(`${this.Auth.domain}/api/v1/haikai/?query=${query}&offset=${offset}&limit=${limit}`)
+            if (criteriaData.target === "collection"){
+                requestURL += `&collection=${criteriaData.id}`
+                if (query !== "" || criteriaData.id !== ""){
+                    criteriaCheck = true
+                }
+            }
+            else{
+                requestURL += `&author=${criteriaData.id}`
+                
+                if (query !== "" || criteriaData.id !== ""){
+                    criteriaCheck = true
+                }
+            }
+        }
+        
+        if (!query.match(/\S/g)){
+            // 空ならば何もしない。
+
+            if (criteriaCheck){
+                return this.Auth.get(requestURL)
+                .then(res => {
+                    // console.log(res)
+                    this.renderResult(res, target, page)
+                    return res
+                })
+            }
+            else{
+                this.setState({
+                    q: "",
+                    query: "",
+                    page: null,
+                    list: null,
+                    paginationList: null,
+                    count: null,
+                    displayList: true
+                })
+            }
+        }
+        else{
+            return this.Auth.get(requestURL)
             .then(res => {
+                // console.log(res)
                 this.renderResult(res, target, page)
                 return res
             })
         }
+    }
+    removeCriteria(e, criteria){
+        let criteriaData = {}
+
+        if (criteria === "author"){
+            this.setState({
+                page: 1,
+                targetAuthor: null,
+                displayAuthor: "",
+                displayList: false
+            })
+
+            if (this.state.targetCollection){
+                criteriaData.target = "collection"
+                criteriaData.id = this.state.targetCollection
+            }
+            else{
+                criteriaData.target = "collection"
+                criteriaData.id = ""
+            }
+
+            this.pushURL(this.state.q, this.state.target, 1, this.state.targetCollection, null)
+        }
+        else{
+            if (this.state.targetAuthor){
+                criteriaData.target = "author"
+                criteriaData.id = this.state.targetAuthor
+            }
+            else{
+                criteriaData.target = "collection"
+                criteriaData.id = ""
+            }
+
+            this.setState({
+                page: 1,
+                targetCollection: null,
+                displayCollection: "",
+                displayList: false
+            })
+
+            this.pushURL(this.state.q, this.state.target, 1, null, this.state.targetAuthor)
+        }
+
+        if (this.state.q){
+            this.search(this.state.q, this.state.target, 1, criteriaData)
+        }
+        else{
+            this.search(this.state.q, this.state.target, 1, criteriaData)
+        }
+    }
+
+    changeSearchCriteria(e, criteria, data){
+        let criteriaData = {
+            target: criteria,
+            id: data.id   
+        }
+
+        if (criteria === "author"){
+            this.setState({
+                page: 1,
+                targetAuthor: data.id,
+                displayAuthor: data.name,
+                targetCollection: null,
+                displayCollection: "",
+                displayList: false
+            })
+
+            this.pushURL(this.state.q, this.state.target, 1, null, data.id)
+        }
+        else{
+            this.setState({
+                page: 1,
+                targetAuthor: null,
+                displayAuthor: "",
+                targetCollection: data.id,
+                displayCollection: data.name,
+                displayList: false
+            })
+
+            this.pushURL(this.state.q, this.state.target, 1, data.id, null)
+        }
+
+        this.search(this.state.q, this.state.target, 1, criteriaData)
     }
 
     renderResult(res, target, page){
@@ -218,18 +383,19 @@ class Search extends Component {
                         {result.firstPart ? <p className="kaguya largeText uk-padding-remove-left">{result.firstPart}　{result.secondPart}　{result.thirdPart} {result.fourthPart} {result.lastPart} </p> : <p className="kaguya largeText uk-padding-remove-left">{result.firstPartKana}　{result.secondPartKana} {result.thirdPartKana} {result.fourthPartKana} {result.lastPartKana}</p>}
                         <ul className="uk-margin-remove" uk-accordion="true">
                             <li>
-                                <a class="uk-accordion-title uk-margin-remove" href="#"></a>
-                                <div class="uk-accordion-content">
+                                <a className="uk-accordion-title uk-margin-remove"></a>
+                                <div className="uk-accordion-content">
                                     {result.firstPart ? <p className="kaguya uk-padding-remove-left">{result.firstPartKana}　{result.secondPartKana}　{result.thirdPartKana} {result.fourthPartKana} {result.lastPartKana} </p> : <p className="kaguya uk-padding-remove-left">{result.firstPart}　{result.secondPart} {result.thirdPart} {result.fourthPart} {result.lastPart}</p>}
 
                                     <ReactMarkdown
                                         source={result.description}
                                     ></ReactMarkdown>
                                     <div className="uk-align-right">
-                                        <Link className="uk-text-break link uk-align-right uk-margin-remove" onClick={e => this.changeEdit(e,　result)}>
-                                            <span className="uk-visible@s" uk-icon="icon: file-edit; ratio: 1.6"></span>
-                                            <span className="uk-hidden@s" uk-icon="icon: file-edit; ratio: 1.2"></span>
-                                        </Link>
+                                        <button className="uk-align-right uk-button uk-button-default uk-text-center uk-margin-remove" onClick={e => this.changeEdit(e,　result)} >
+                                            <span className="uk-margin-small-right" uk-icon="icon: file-edit; ratio: 1.0">
+                                            </span>
+                                            編集
+                                        </button>
                                         <br/>
                                         <p>
                                             番号: {result.number}<br/>
@@ -242,9 +408,9 @@ class Search extends Component {
                         </ul>
                         <div className="uk-align-center uk-align-right@s">
                             <div className="uk-grid-collapse" uk-grid="true">
-                                {result.author && <a className="badgeText uk-margin-right" href="#" >{result.author.name}</a> }
-                                {result.collection && <a className="badgeText uk-margin-right" href="#" >{result.collection.name}</a>}
-                                {result.collection.parent && <a className="badgeText uk-margin-right" href="#" >{result.collection.parent.name}</a>}
+                                {result.author && <a className="badgeText uk-margin-right" onClick={e => this.changeSearchCriteria(e,　"author", result.author)}  >{result.author.name}</a> }
+                                {result.collection && <a className="badgeText uk-margin-right" onClick={e => this.changeSearchCriteria(e,　"collection", result.collection)} >{result.collection.name}</a>}
+                                {result.collection.parent && <a className="badgeText uk-margin-right" onClick={e => this.changeSearchCriteria(e,　"collection", result.collection.parent)} >{result.collection.parent.name}</a>}
                             </div>
                         </div>
                     </div>
@@ -265,16 +431,17 @@ class Search extends Component {
                         </div>
                         <ul className="uk-margin-remove" uk-accordion="true">
                             <li>
-                                <a class="uk-accordion-title uk-margin-remove" href="#"></a>
-                                <div class="uk-accordion-content">
+                                <a className="uk-accordion-title uk-margin-remove"></a>
+                                <div className="uk-accordion-content">
                                     <ReactMarkdown
                                         source={result.description}
                                     ></ReactMarkdown>
                                     <div className="uk-align-right">
-                                        <Link className="uk-text-break link uk-align-right uk-margin-remove" onClick={e => this.changeEdit(e,　result)}>
-                                            <span className="uk-visible@s" uk-icon="icon: file-edit; ratio: 1.6"></span>
-                                            <span className="uk-hidden@s" uk-icon="icon: file-edit; ratio: 1.2"></span>
-                                        </Link>
+                                        <button className="uk-align-right uk-button uk-button-default uk-text-center uk-margin-remove" onClick={e => this.changeEdit(e,　result)} >
+                                            <span className="uk-margin-small-right" uk-icon="icon: file-edit; ratio: 1.0">
+                                            </span>
+                                            編集
+                                        </button>
                                         <br/>
                                         <p>
                                             更新日時: {moment(result.updated_at).format('YYYY/MM/DD HH:mm:ss')}<br/>
@@ -286,9 +453,9 @@ class Search extends Component {
                         </ul>
                         <div className="uk-align-center uk-align-right@s">
                             <div className="uk-grid-collapse" uk-grid="true">
-                                {result.author && <a className="badgeText uk-margin-right" href="#" >{result.author.name}</a> }
-                                {result.collection && <a className="badgeText uk-margin-right" href="#" >{result.collection.name}</a>}
-                                {result.collection.parent && <a className="badgeText uk-margin-right" href="#" >{result.collection.parent.name}</a>}                                
+                            {result.author && <a className="badgeText uk-margin-right" onClick={e => this.changeSearchCriteria(e,　"author", result.author)}  >{result.author.name}</a> }
+                                {result.collection && <a className="badgeText uk-margin-right" onClick={e => this.changeSearchCriteria(e,　"collection", result.collection)} >{result.collection.name}</a>}
+                                {result.collection.parent && <a className="badgeText uk-margin-right" onClick={e => this.changeSearchCriteria(e,　"collection", result.collection.parent)} >{result.collection.parent.name}</a>}
                             </div>
                         </div>
                     </div>
@@ -299,12 +466,12 @@ class Search extends Component {
             for(let i in res.results){
                 let result = res.results[i]
                 list.push(
-                    <div className="uk-card uk-card-default uk-card-body uk-align-center uk-margin-medium-left uk-margin-medium-right uk-margin-remove-adjacent" uk-grid="true">
+                    <div key={i} className="uk-card uk-card-default uk-card-body uk-align-center uk-margin-medium-left uk-margin-medium-right uk-margin-remove-adjacent" uk-grid="true">
                         {result.firstPart ? <p className="kaguya largeText uk-padding-remove-left">{result.firstPart}　{result.secondPart}　{result.lastPart}</p> : <p className="kaguya largeText uk-padding-remove-left">{result.firstPartKana}　{result.secondPartKana}　{result.lastPartKana}</p>}
                         <ul className="uk-margin-remove" uk-accordion="true">
                             <li>
-                                <a class="uk-accordion-title uk-margin-remove" href="#"></a>
-                                <div class="uk-accordion-content">
+                                <a className="uk-accordion-title uk-margin-remove"></a>
+                                <div className="uk-accordion-content">
                                     {result.firstPart ? <p className="kaguya uk-padding-remove-left">{result.firstPartKana}　{result.secondPartKana}　{result.lastPartKana}</p> : <p className="kaguya uk-padding-remove-left">{result.firstPart}　{result.secondPart}　{result.lastPart}</p>}
 
                                     <ReactMarkdown
@@ -312,10 +479,11 @@ class Search extends Component {
                                     ></ReactMarkdown>
 
                                     <div className="uk-align-right">
-                                        <Link className="uk-text-break link uk-align-right uk-margin-remove" onClick={e => this.changeEdit(e,　result)}>
-                                            <span className="uk-visible@s" uk-icon="icon: file-edit; ratio: 1.6"></span>
-                                            <span className="uk-hidden@s" uk-icon="icon: file-edit; ratio: 1.2"></span>
-                                        </Link>
+                                        <button className="uk-align-right uk-button uk-button-default uk-text-center uk-margin-remove" onClick={e => this.changeEdit(e,　result)} >
+                                            <span className="uk-margin-small-right" uk-icon="icon: file-edit; ratio: 1.0">
+                                            </span>
+                                            編集
+                                        </button>
                                         <br/>
                                         <p>
                                             番号: {result.number}<br/>
@@ -328,9 +496,9 @@ class Search extends Component {
                         </ul>
                         <div className="uk-align-center uk-align-right@s">
                             <div className="uk-grid-collapse" uk-grid="true">
-                                {result.author && <a className="badgeText uk-margin-right" href="#" >{result.author.name}</a> }
-                                {result.collection && <a className="badgeText uk-margin-right" href="#" >{result.collection.name}</a>}
-                                {result.collection.parent && <a className="badgeText uk-margin-right" href="#" >{result.collection.parent.name}</a>}
+                                {result.author && <a className="badgeText uk-margin-right" onClick={e => this.changeSearchCriteria(e,　"author", result.author)}  >{result.author.name}</a> }
+                                {result.collection && <a className="badgeText uk-margin-right" onClick={e => this.changeSearchCriteria(e,　"collection", result.collection)} >{result.collection.name}</a>}
+                                {result.collection.parent && <a className="badgeText uk-margin-right" onClick={e => this.changeSearchCriteria(e,　"collection", result.collection.parent)} >{result.collection.parent.name}</a>}
                             </div>
                         </div>
                     </div>
@@ -342,67 +510,39 @@ class Search extends Component {
             if (page !== 1)
             {
                 paginationList.push(
-                    <li>
-                        <a className="page-link" href="#" onClick={e => this.changePage(e,　1)}>{1}</a>
+                    <li key={1}>
+                        <a className="page-link" onClick={e => this.changePage(e,　1)}>{1}</a>
                     </li>
                 )
                 paginationList.push(
-                    <li>
-                        <a className="page-link" href="#" onClick={e => this.changePage(e,　paginations[0])}>&lt;</a>
+                    <li key={2}>
+                        <a className="page-link" onClick={e => this.changePage(e,　paginations[0])}>&lt;</a>
                     </li>
                 )
             }
             for (let n in paginations){
                 n = paginations[n]
                 paginationList.push(
-                    <li>
-                        <a className="page-link" href="#" onClick={e => this.changePage(e,　n)}>{n}</a>
+                    <li key={paginationList.length}>
+                        <a className="page-link" onClick={e => this.changePage(e,　n)}>{n}</a>
                     </li>
                 );
             }
             if (page !== Math.ceil(count / 50)){
                 paginationList.push(
-                    <li>
-                        <a className="page-link" href="#" onClick={e => this.changePage(e,　paginations[-1])}>&gt;</a>
+                    <li key={paginationList.length}>
+                        <a className="page-link" onClick={e => this.changePage(e,　paginations[-1])}>&gt;</a>
                     </li>
                 )
                 paginationList.push(
-                    <li>
-                        <a className="page-link" href="#" onClick={e => this.changePage(e,　Math.ceil(count / 50))}>{Math.ceil(count / 50)}</a>
+                    <li key={paginationList.length}>
+                        <a className="page-link" onClick={e => this.changePage(e,　Math.ceil(count / 50))}>{Math.ceil(count / 50)}</a>
                     </li>
                 )
             }
         }
         else{
-            if(count > 0 && page > Math.ceil(count / 50)){
-                if (target === "haikai"){
-                    this.props.history.push({
-                        pathname: '/search',
-                        search: `?q=${this.state.q}&page=${Math.ceil(count / 50)}`,
-                    })
-                }
-                else{
-                    this.props.history.push({
-                        pathname: '/search',
-                        search: `?q=${this.state.q}&target=${this.state.target}&page=${Math.ceil(count / 50)}`,
-                    })
-                }
-            }
-            else if (count > 0 && page < 1){
-                if (target === "haikai"){
-                    this.props.history.push({
-                        pathname: '/search',
-                        search: `?q=${this.state.q}`,
-                    })
-                }
-                else{
-                    this.props.history.push({
-                        pathname: '/search',
-                        search: `?q=${this.state.q}&target=${this.state.target}`,
-                    })
-                }
-
-            }
+                        
         }
 
         //かぐや様は告らせたい
@@ -410,29 +550,44 @@ class Search extends Component {
             list = []
             count = 1
             list.push(
-                <div className="uk-card uk-card-default uk-card-body uk-align-center uk-margin-medium-left uk-margin-medium-right uk-margin-remove-adjacent" uk-grid="true">
+                <div key={1} className="uk-card uk-card-default uk-card-body uk-align-center uk-margin-medium-left uk-margin-medium-right uk-margin-remove-adjacent" uk-grid="true">
                     <p className="kaguya largeText uk-padding-remove-left">かぐや様は告らせたい〜天才たちの恋愛頭脳戦〜</p>
                     <div className="uk-align-center uk-align-right@s">
                         <div className="uk-grid-collapse" uk-grid="true">
                             <a className="badgeText uk-margin-right" href="https://twitter.com/akasaka_aka?lang=ja">赤坂アカ</a>
                             <a className="badgeText uk-margin-right" href="https://twitter.com/824_aoi?lang=ja">古賀葵</a>
                             <a className="badgeText uk-margin-right" href="https://kaguya.love/" >アニメ公式サイト</a>
+                            <a className="badgeText uk-margin-right" href="https://kaguya.love/1st/" >アニメ一期公式サイト</a>
                             <a className="badgeText uk-margin-right" href="https://youngjump.jp/kaguyasama/" >漫画公式サイト</a>
                             <a className="badgeText uk-margin-right" href="https://kaguyasama-movie.com/" >映画公式サイト</a>
                         </div>
                     </div>
-                </div>               
+                </div>
             )
+
+            this.setState({
+                list: list,
+                paginationList: paginationList,
+                count: count,
+                page: page,
+                displayList: true,
+                targetAuthor: null,
+                targetCollection: null,
+                displayAuthor: "",
+                displayCollection: ""
+            })
+
         }
         //かぐや様は告らせたい
-
-        this.setState({
-            list: list,
-            paginationList: paginationList,
-            count: count,
-            page: page,
-            displayList: true
-        })
+        else{
+            this.setState({
+                list: list,
+                paginationList: paginationList,
+                count: count,
+                page: page,
+                displayList: true
+            })
+        }
     }
 
     pagination(currentPage, pageLength){
@@ -471,6 +626,61 @@ class Search extends Component {
         return pageList
     }
 
+    openModal() {
+        this.setState({modal: true});
+    }
+
+    closeModal() {
+        this.setState({
+            modal: false,
+            editData: null
+        });
+        this.pushURL(this.state.q, this.state.target, this.state.page, this.state.targetCollection, this.state.targetAuthor, true)
+    }
+    
+    pushURL(q, target=null, page=1, collection=null, author=null, replace=false){
+        let requestURL = `?q=${q}`
+
+        if (target === "haikai"){
+            // 俳諧は何もしません
+        }
+        else{
+            requestURL += `&target=${target}`
+        }
+
+        if (collection){
+            requestURL += `&collection=${collection}`
+        }
+
+        if (author){
+            requestURL += `&author=${author}`
+        }
+
+        if (page > 1){
+            requestURL += `&page=${page}`
+        }
+
+        if (replace){
+            this.props.history.replace({
+                pathname: '/search',
+                search: requestURL
+            })
+        }
+        else{
+            this.props.history.push({
+                pathname: '/search',
+                search: requestURL
+            })
+        }
+
+        this.setState({
+            q: q,
+            query: q
+        })
+
+        document.title = q + "(" + this.state.targetName[this.state.targets.indexOf(target)] + ") - かぐや";
+    }
+
     handleChange(e){
         this.setState(
             {
@@ -478,33 +688,40 @@ class Search extends Component {
             }
         )
     }
-    
+
     handleFormSubmit(e){
         e.preventDefault();
-
-        if (this.state.target === "haikai"){
-            this.props.history.push({
-                pathname: '/search',
-                search: `?q=${this.state.q}`,
-            })
+        if (!this.state.q.match(/\S/g)){
+            // 空ならば何もしない。
+            if (this.state.targetAuthor || this.state.targetCollection){
+                this.setState({
+                    page: 1,
+                    list: null,
+                    displayList: false
+                })
+                this.search(this.state.q, this.state.target, this.state.page)
+                this.pushURL(this.state.q, this.state.target, this.state.page, this.state.targetCollection, this.state.targetAuthor)
+            }
+            else{
+                this.setState({
+                    displayList: true
+                })
+            }
         }
         else{
-            this.props.history.push({
-                pathname: '/search',
-                search: `?q=${this.state.q}&target=${this.state.target}`,
+            this.setState({
+                page: 1,
+                list: null,
+                displayList: false
             })
+            this.search(this.state.q, this.state.target, this.state.page)
+            this.pushURL(this.state.q, this.state.target, this.state.page, this.state.targetCollection, this.state.targetAuthor)
         }
-
-        this.setState({
-            list: null,
-            displayList: false
-        })
-
     }
 
     handleNewCollectionFormSubmit(e){
         e.preventDefault();
-        console.log(this.state)
+
         this.Auth.post(`${this.Auth.domain}/api/v1/collection/`,{},  
             JSON.stringify({
                 name: this.state.newCollection,
@@ -512,7 +729,7 @@ class Search extends Component {
                 parent: this.state.newCollectionParent.value
             }),
             ).then((response) => {
-                console.log(response)
+                // console.log(response)
 
                 this.setState({
                     collection: {
@@ -527,10 +744,8 @@ class Search extends Component {
             }
         )
     }
-
     handleNewAuthorFormSubmit(e){
         e.preventDefault();
-        console.log(this.state)
 
         this.Auth.post(`${this.Auth.domain}/api/v1/author/`,{},  
             JSON.stringify({
@@ -538,7 +753,7 @@ class Search extends Component {
                 descrption: this.state.newAuthorDescrption,
             }),
             ).then((response) => {
-                console.log(response)
+                // console.log(response)
                 this.setState({
                     author: {
                         label: response.name,
@@ -573,7 +788,7 @@ class Search extends Component {
                     "year": this.state.year.value
                 }),
                 ).then((response) => {
-                    console.log(response)
+                    // console.log(response)
                     this.closeModal();
                 })
                 .catch((error) => {
@@ -601,7 +816,7 @@ class Search extends Component {
                         "year": this.state.year.value
                     }),
                 ).then((response) => {
-                    console.log(response)
+                    // console.log(response)
                     this.closeModal();
                 })
                 .catch((error) => {
@@ -620,7 +835,7 @@ class Search extends Component {
                         "year": this.state.year.value
                     }),
                 ).then((response) => {
-                    console.log(response)
+                    // console.log(response)
                     this.closeModal();
                 })
                 .catch((error) => {
@@ -645,7 +860,7 @@ class Search extends Component {
                     "year": this.state.year.value
                 }),
                 ).then((response) => {
-                    console.log(response)
+                    // console.log(response)
                     this.closeModal();
                 })
                 .catch((error) => {
@@ -672,7 +887,7 @@ class Search extends Component {
                         "year": this.state.year.value
                     }),
                 ).then((response) => {
-                    console.log(response)
+                    // console.log(response)
                     this.closeModal();
                 })
                 .catch((error) => {
@@ -690,7 +905,7 @@ class Search extends Component {
                         "year": this.state.year.value
                     }),
                 ).then((response) => {
-                    console.log(response)
+                    // console.log(response)
                     this.closeModal();
                 })
                 .catch((error) => {
@@ -702,21 +917,14 @@ class Search extends Component {
 
     changePage(e, page){
         e.preventDefault();
+
+        this.search(this.state.q, this.state.target, page)
+        this.pushURL(this.state.q, this.state.target, page, this.state.targetCollection, this.state.targetAuthor, false)
+        
         this.setState({
+            page: page,
             displayList: false
         })
-        if (this.state.target === "haikai"){
-            this.props.history.push({
-                pathname: '/search',
-                search: `?q=${this.state.q}&page=${page}`,
-            });
-        }
-        else{
-            this.props.history.push({
-                pathname: '/search',
-                search: `?q=${this.state.q}&target=${this.state.target}&page=${page}`,
-            });            
-        }
 
         window.scrollTo(0, 0);
     }
@@ -726,30 +934,19 @@ class Search extends Component {
         
         this.setState({
             list: null,
-            paginationList: null,
             count: null,
+            page: 1,
+            paginationList: null,
             displayList: false,
-            target: target
+            target: target,
+            targetAuthor: null,
+            targetCollection: null,
+            displayAuthor: "",
+            displayCollection: ""
         })
 
-        if(target === 'tanka'){
-            this.props.history.push({
-                pathname: '/search',
-                search: `?q=${this.state.q}&target=tanka`,
-            });
-        }
-        else if(target === 'koten'){
-            this.props.history.push({
-                pathname: '/search',
-                search: `?q=${this.state.q}&target=koten`,
-            });
-        }
-        else{
-            this.props.history.push({
-                pathname: '/search',
-                search: `?q=${this.state.q}`,
-            });
-        }
+        this.search(this.state.query, target, this.state.page)
+        this.pushURL(this.state.query, target, 1)
 
         window.scrollTo(0, 0);
     }
@@ -769,8 +966,7 @@ class Search extends Component {
         this.props.history.push({
             pathname: '/edit',
         })
-        console.log(props)
-
+        
         if (props.author !== null){
             authorData.value = props.author.id
             authorData.label = props.author.name
@@ -819,7 +1015,7 @@ class Search extends Component {
     changeCreate(e){
         e.preventDefault();
         
-        this.props.history.push({
+        this.props.history.replace({
             pathname: '/edit',
         })
         
@@ -861,6 +1057,42 @@ class Search extends Component {
         this.openModal()
     }
 
+    getAuthorInfo(authorId){
+        return this.Auth.get(`${this.Auth.domain}/api/v1/author/${authorId}`)
+        .then((response) => {
+            this.setState({
+                displayAuthor: response.name
+            })
+
+            return response.name
+        })
+        .catch((e) => {
+            console.log(e);
+            return Promise.resolve({ options: [] });
+        });
+    }
+
+    getCollectionInfo(collectionId){
+        return this.Auth.get(`${this.Auth.domain}/api/v1/collection/${collectionId}`)
+        .then((response) => {
+            let name = response.name
+
+            if (response.parent){
+                name = response.parent.name + " (" + name + ")" 
+            }
+
+            this.setState({
+                displayCollection: name
+            })
+
+            return response.name
+        })
+        .catch((e) => {
+            console.log(e);
+            return Promise.resolve({ options: [] });
+        });
+    }
+
     getSelectCollection(input){
         if (!input) {
             return Promise.resolve({ options: [] });
@@ -868,9 +1100,8 @@ class Search extends Component {
 
         return this.Auth.get(`${this.Auth.domain}/api/v1/collection?query=${input}`)
         .then((response) => {
-            console.log(response)
-
             let options = []
+
             if (response.count > 0){
                 options.push({value: "", label: "なし"})
             }
@@ -885,7 +1116,7 @@ class Search extends Component {
                         return { value: collection.id, label: collection.name};
                     }
                 }));
-            console.log(options)
+
             return options
         })
         .catch((e) => {
@@ -901,9 +1132,8 @@ class Search extends Component {
 
         return this.Auth.get(`${this.Auth.domain}/api/v1/author?query=${input}`)
         .then((response) => {
-            console.log(response)
-
             let options = []
+            
             if (response.count > 0){
                 options.push({value: "", label: "なし"})
             }
@@ -930,7 +1160,7 @@ class Search extends Component {
                         
                         <div className="uk-navbar-item uk-flex">
                             <div className="uk-inline uk-box-shadow-hover-medium uk-visible@m">
-                                <form name="searchForm" action="javascript:void(0)" onSubmit={this.handleFormSubmit} autoComplete="off">
+                                <form name="searchForm" onSubmit={this.handleFormSubmit} autoComplete="off">
                                     <a className="uk-form-icon uk-form-icon-flip" onClick={this.handleFormSubmit} uk-icon="icon: search"></a>
                                     <input className="uk-input uk-form-width-large" type="text" name="q" value={this.state.q} onChange={this.handleChange} />
                                 </form>
@@ -948,9 +1178,10 @@ class Search extends Component {
                         </div>
                         <ul className="uk-navbar-nav">
                             <li>
-                                <a className="uk-navbar-toggle" uk-navbar-toggle-icon="true" href="#"></a>
+                                <a className="uk-navbar-toggle" uk-navbar-toggle-icon="true"></a>
                                 <div className="uk-navbar-dropdown">
                                     <ul className="uk-nav uk-navbar-dropdown-nav">
+                                        <li><Link to='/notice'>お知らせ</Link></li>
                                         <li><Link to='/logout'>ログアウト</Link></li>
                                     </ul>
                                 </div>
@@ -959,10 +1190,10 @@ class Search extends Component {
                     </div>
                 </div>
                 <div className="uk-hidden@m">
-                    <form name="searchFormSmart" className="" action="javascript:void(0)" onSubmit={this.handleFormSubmit} autoComplete="off">
+                    <form name="searchFormSmart" className="" onSubmit={this.handleFormSubmit} autoComplete="off">
                         <div className="uk-margin-left uk-margin-right uk-flex uk-flex-center">
                             <div className="uk-inline uk-box-shadow-hover-medium">
-                                <a className="uk-form-icon uk-form-icon-flip" href="#" onClick={this.handleFormSubmit} uk-icon="icon: search"></a>
+                                <a className="uk-form-icon uk-form-icon-flip" onClick={this.handleFormSubmit} uk-icon="icon: search"></a>
                                 <input className="uk-input uk-form-width-large" type="text" name="q" value={this.state.q} onChange={this.handleChange} />
                             </div>
                         </div>
@@ -1043,10 +1274,19 @@ class Search extends Component {
                                 return (
                                     <div>
                                         <div className="uk-clearfix uk-display-inline">
-                                            <div className="uk-float-left uk-margin-large-left">
-                                                <p className="">{this.state.count} 件 {this.state.page}ページ目 ({(this.state.page - 1) * 50 + 1}～{(this.state.page - 1) * 50 + 50}件)</p>
+                                            <div className="uk-float-left uk-margin-large-left uk-margin-large-right">
+                                                <p className="">
+                                                    {this.state.count} 件 {this.state.page}ページ目 ({(this.state.page - 1) * 50 + 1}～{(this.state.page - 1) * 50 + 50}件)
+                                                    {this.state.displayCollection && <br/>}
+                                                    {this.state.displayCollection && "検索対象(作品): " + this.state.displayCollection}
+                                                    {this.state.displayCollection && <a className="uk-margin-small-left" onClick={e => this.removeCriteria(e,　"collection")}>解除</a> }
+                                                    {this.state.displayAuthor && <br/>}
+                                                    {this.state.displayAuthor && "検索対象(作者): " + this.state.displayAuthor}
+                                                    {this.state.displayAuthor && <a className="uk-margin-small-left" onClick={e => this.removeCriteria(e,　"author")}>解除</a> }
+
+                                                </p>
                                             </div>
-                                            <div className="uk-float-right uk-margin-large-right@s uk-margin-small-right uk-hidden@s">
+                                            <div className="uk-float-right uk-margin-large-right uk-margin-small-bottom uk-margin-small-right uk-hidden@s">
                                                 <button className="uk-button uk-button-default"　onClick={e => this.changeCreate(e)}>追加</button>
                                             </div>
                                         </div>
@@ -1062,7 +1302,15 @@ class Search extends Component {
                                         <div>
                                             <div className="uk-clearfix uk-display-inline">
                                                 <div className="uk-float-left uk-margin-large-left">
-                                                    <p className="">{this.state.count} 件</p>
+                                                    <p className="">
+                                                        {this.state.count} 件
+                                                        {this.state.displayCollection && <br/>}
+                                                        {this.state.displayCollection && "検索対象(作品): " + this.state.displayCollection}
+                                                        {this.state.displayCollection && <a className="uk-margin-small-left" onClick={e => this.removeCriteria(e,　"collection")}>解除</a> }
+                                                        {this.state.displayAuthor && <br/>}
+                                                        {this.state.displayAuthor && "検索対象(作者): " + this.state.displayAuthor}
+                                                        {this.state.displayAuthor && <a className="uk-margin-small-left" onClick={e => this.removeCriteria(e,　"author")}>解除</a> }
+                                                    </p>
                                                 </div>
                                                 <div className="uk-float-right uk-margin-large-right@s uk-margin-small-right uk-hidden@s">
                                                     <button className="uk-button uk-button-default"　onClick={e => this.changeCreate(e)}>追加</button>
@@ -1103,7 +1351,7 @@ class Search extends Component {
                                         }
                                     )()}
                                 </div>                                
-                                <form name="editForm" action="javascript:void(0)" onSubmit={this.handleEditFormSubmit}>
+                                <form name="editForm" onSubmit={this.handleEditFormSubmit}>
                                     {(() => {
                                         if (this.state.target === "koten"){
                                             return (
@@ -1117,8 +1365,8 @@ class Search extends Component {
                                                         </div>
                                                         <ul className="uk-margin-left uk-margin-right" uk-accordion="true">
                                                             <li>
-                                                                <a class="uk-accordion-title" href="#"></a>
-                                                                <div class="uk-accordion-content">
+                                                                <a className="uk-accordion-title"></a>
+                                                                <div className="uk-accordion-content">
                                                                 <p>プレビュー</p>
                                                                     <hr/>
                                                                     <ReactMarkdown
@@ -1224,8 +1472,8 @@ class Search extends Component {
                                         </div>
                                         <ul className="uk-margin-remove" uk-accordion="true">
                                             <li className="uk-margin-left uk-margin-right">
-                                                <a class="uk-accordion-title" href="#"></a>
-                                                <div class="uk-accordion-content">
+                                                <a className="uk-accordion-title"></a>
+                                                <div className="uk-accordion-content">
                                                     <p>プレビュー</p>
                                                     <hr/>
                                                     <ReactMarkdown
@@ -1259,8 +1507,8 @@ class Search extends Component {
                                         </div>
                                         <ul className="uk-margin-remove" uk-accordion="true">
                                             <li className="uk-margin-left uk-margin-right">
-                                                <a class="uk-accordion-title" href="#"></a>
-                                                <div class="uk-accordion-content">
+                                                <a className="uk-accordion-title"></a>
+                                                <div className="uk-accordion-content">
                                                     <hr/>
                                                     <p>新規所蔵作品の追加</p>
                                                     
@@ -1320,8 +1568,8 @@ class Search extends Component {
                                         </div>
                                         <ul className="uk-margin-remove" uk-accordion="true">
                                             <li className="uk-margin-left uk-margin-right">
-                                                <a class="uk-accordion-title" href="#"></a>
-                                                <div class="uk-accordion-content">
+                                                <a className="uk-accordion-title"></a>
+                                                <div className="uk-accordion-content">
                                                     <hr/>
                                                     <p>新規作者の追加</p>
                                                     <div className="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
