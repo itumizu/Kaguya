@@ -1,21 +1,66 @@
 import React, { Component } from 'react';
-import AuthService from './AuthService';
+import AuthService from '../components/AuthService';
 import '../css/style.sass'
+import { Link } from 'react-router-dom'
+import queryString from 'query-string';
 
 class Login extends Component {
-    constructor(){
-        super();
+    constructor(props){
+        super(props);
+        this.state = {
+            redirectURL: "/"
+        }
+
         this.handleChange = this.handleChange.bind(this);
         this.handleFormSubmit = this.handleFormSubmit.bind(this);
         this.Auth = new AuthService();
+        
+        if (props.history.location.search){
+            let q = queryString.parse(props.history.location.search)
+
+            if ('redirect_after_login' in q){
+                this.state.redirectURL = q.redirect_after_login
+
+                if ('author' in q){
+                    this.state.redirectURL += "&author=" + q.author
+                }
+                
+                if ('collection' in q){
+                    this.state.redirectURL += "&collection=" + q.collection
+                }
+
+                if ('page' in q){
+                    this.state.redirectURL += "&page=" + q.page
+                }
+            }
+        }
+        document.title = "ログイン - かぐや"
     }
     render() {
-        console.log(this.Auth.loggedIn())
         if(this.Auth.loggedIn()){
-            this.props.history.replace('/');
+            this.props.history.replace(this.state.redirectURL);
         }
         return (
-            <div className="uk-section uk-flex uk-flex-middle" uk-height-viewport="true">
+            <div>
+            <div className="uk-navbar-container uk-navbar-transparent" uk-navbar="true">              
+                <div className="uk-navbar-right">
+                    <div className="uk-inline uk-visible@s">
+                        <div className="uk-grid-small uk-child-width-expand@s uk-form-stacked" uk-grid="true">
+                        </div>
+                    </div>
+                    <ul className="uk-navbar-nav">
+                        <li>
+                            <a className="uk-navbar-toggle" uk-navbar-toggle-icon="true"></a>
+                            <div className="uk-navbar-dropdown">
+                                <ul className="uk-nav uk-navbar-dropdown-nav">
+                                    <li><Link to='/notice'>お知らせ</Link></li>
+                                </ul>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div className="uk-section uk-flex uk-flex-middle uk-margin-large-top">
                 <div className="uk-width-1-1">
                     <div className="uk-container">
                         <div className="uk-grid-margin uk-grid uk-grid-stack uk-grid">
@@ -66,6 +111,7 @@ class Login extends Component {
                     </div>
                 </div>
             </div>
+            </div>
         );
     }
 
@@ -82,7 +128,7 @@ class Login extends Component {
       
         this.Auth.login(this.state.username,this.state.password)
             .then(res =>{
-               this.props.history.replace('/');
+               this.props.history.replace(this.state.redirectURL);
             })
             .catch(err =>{
                 alert(err);
