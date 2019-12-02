@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'django_filters',
-    'graphene_django',
+    # 'graphene_django',
     'sass_processor',
     'debug_toolbar',
     'markdownx',
@@ -205,12 +205,12 @@ AXES_META_PRECEDENCE_ORDER = (
 # }
 # AXES_CACHE = 'axes_cache'
 
-GRAPHENE = {
-    'SCHEMA': 'system.schema.schema',
-    'MIDDLEWARE': [
-        'graphql_jwt.middleware.JSONWebTokenMiddleware',
-    ],
-}
+# GRAPHENE = {
+#     'SCHEMA': 'system.schema.schema',
+#     'MIDDLEWARE': [
+#         'graphql_jwt.middleware.JSONWebTokenMiddleware',
+#     ],
+# }
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
@@ -267,3 +267,7 @@ if not DEBUG:
 
     X_FRAME_OPTIONS = 'DENY'
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+    REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = (
+        'rest_framework.renderers.JSONRenderer',
+    )

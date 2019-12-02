@@ -17,6 +17,8 @@ WORKDIR /system
 ADD requirements.base.txt /system/requirements.base.txt
 ADD requirements.txt /system/requirements.txt
 
+RUN pip install --upgrade pip
+
 RUN pip install --no-cache-dir -r requirements.base.txt
 RUN pip install --no-cache-dir -r requirements.txt
 

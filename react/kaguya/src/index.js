@@ -3,10 +3,11 @@ import ReactDOM from 'react-dom';
 import * as serviceWorker from './serviceWorker';
 
 import App from './App';
-import Search from './components/Search'
-import Login from './components/Login'
-import Logout from './components/Logout'
-import NotFound from './components/NotFound'
+import Search from './pages/Search'
+import Login from './pages/Login'
+import Logout from './pages/Logout'
+import Notice from './pages/Notice'
+import NotFound from './pages/NotFound'
 
 import { createBrowserHistory } from 'history'
 import { Router, Route, Switch } from 'react-router-dom';
@@ -23,6 +24,7 @@ ReactDOM.render(
       <Route exact path="/edit" component={Search} />
       <Route exact path="/login" component={Login} />
       <Route exact path="/logout" component={Logout} />
+      <Route exact path="/notice" component={Notice} />
       <Route component={NotFound} />
     </Switch>
   </Router>
