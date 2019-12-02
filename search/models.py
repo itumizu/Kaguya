@@ -1,7 +1,7 @@
 import uuid
 
 from django.db import models
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, RegexValidator
 from markdownx.models import MarkdownxField
 from users.models import User
 
@@ -209,3 +209,35 @@ class Koten(models.Model):
         unique_together = (
             ('text', 'collection', 'author'),
         )
+
+class Notice(models.Model):
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    title = models.CharField(
+        verbose_name='タイトル',
+        blank=False,
+        null=False,
+        max_length=100,
+        default='',
+        validators=[RegexValidator(
+            regex=u'^[ぁ-んァ-ヶー一-龠]+$',
+            message='全角のひらがな・カタカナ・漢字で入力してください',
+        )]
+    )
+
+    body = models.TextField(
+        verbose_name='本文',
+        blank=True,
+        null=True,
+        max_length=3000
+    )
+
+    created_at = models.DateTimeField(verbose_name='作成日時', auto_now_add=True)
+    updated_at = models.DateTimeField(verbose_name='更新日時', auto_now=True)
+
+    def __str__(self):
+        return self.title + f"({str(self.created_at)})"
+    
+    class Meta:
+        verbose_name = 'お知らせ'
+        verbose_name_plural = 'お知らせ'

@@ -1,12 +1,11 @@
-from rest_framework import viewsets, filters
+from rest_framework import viewsets, filters, permissions
 
 from users.models import User
-from search.models import Haikai, Tanka, Koten, Collection, Author, Year
+from search.models import Haikai, Tanka, Koten, Collection, Author, Year, Notice
 from .serializer import HaikaiSerializer, TankaSerializer, KotenSerializer, \
     HaikaiListSerializer, TankaListSerializer, KotenListSerializer, \
     CollectionSerializer, AuthorSerializer, YearSerializer, UserSerializer, CollectionListSerializer, \
-    HaikaiFilter, TankaFilter, KotenFilter, CollectionFilter, AuthorFilter
-    
+    HaikaiFilter, TankaFilter, KotenFilter, CollectionFilter, AuthorFilter, NoticeSerializer
 
 class HaikaiViewSet(viewsets.ModelViewSet):
     queryset = Haikai.objects.all()
@@ -98,3 +97,16 @@ class UserViewSet(viewsets.ModelViewSet):
     
     def perform_update(self, serializer):
         serializer.save(updated_by=self.request.user)
+
+class IsAdminOrReadOnly(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        else:
+            return request.user.is_staff
+
+
+class NoticeViewSet(viewsets.ModelViewSet):
+    queryset = Notice.objects.all().order_by('created_at').reverse()
+    serializer_class = NoticeSerializer
+    permission_classes = [IsAdminOrReadOnly]
