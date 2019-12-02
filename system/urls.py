@@ -21,7 +21,6 @@ from django.shortcuts import HttpResponse
 from django.urls import path, include
 from search.views import index as searchIndex
 
-from graphene_django.views import GraphQLView
 from django.views.decorators.csrf import csrf_exempt
 from api import urls as apiUrls
 
@@ -47,5 +46,4 @@ if settings.DEBUG:
     import debug_toolbar
     urlpatterns = [
         path('__debug__/', include(debug_toolbar.urls)),
-        path('graphql_debug/', csrf_exempt(GraphQLView.as_view(graphiql=True)))
     ] + urlpatterns
