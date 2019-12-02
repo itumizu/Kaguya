@@ -13,10 +13,10 @@ djangorestframework_camel_case
 django-cors-headers
 django-filter
 
-graphene-django
-graphene-django-extras
-graphene-django-optimizer
-django-graphql-jwt
+# graphene-django
+# graphene-django-extras
+# graphene-django-optimizer
+# django-graphql-jwt
 
 numpy
 markdown
