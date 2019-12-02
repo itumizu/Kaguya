@@ -1279,10 +1279,10 @@ class Search extends Component {
                                                     {this.state.count} 件 {this.state.page}ページ目 ({(this.state.page - 1) * 50 + 1}～{(this.state.page - 1) * 50 + 50}件)
                                                     {this.state.displayCollection && <br/>}
                                                     {this.state.displayCollection && "検索対象(作品): " + this.state.displayCollection}
-                                                    {this.state.displayCollection && <a className="uk-margin-small-left" onClick={e => this.removeCriteria(e,　"collection")}>解除</a> }
+                                                    {this.state.displayCollection && <a className="badgeText uk-margin-small-left" onClick={e => this.removeCriteria(e,　"collection")}>解除</a> }
                                                     {this.state.displayAuthor && <br/>}
                                                     {this.state.displayAuthor && "検索対象(作者): " + this.state.displayAuthor}
-                                                    {this.state.displayAuthor && <a className="uk-margin-small-left" onClick={e => this.removeCriteria(e,　"author")}>解除</a> }
+                                                    {this.state.displayAuthor && <a className="badgeText uk-margin-small-left" onClick={e => this.removeCriteria(e,　"author")}>解除</a> }
 
                                                 </p>
                                             </div>
@@ -1306,10 +1306,10 @@ class Search extends Component {
                                                         {this.state.count} 件
                                                         {this.state.displayCollection && <br/>}
                                                         {this.state.displayCollection && "検索対象(作品): " + this.state.displayCollection}
-                                                        {this.state.displayCollection && <a className="uk-margin-small-left" onClick={e => this.removeCriteria(e,　"collection")}>解除</a> }
+                                                        {this.state.displayCollection && <a className="badgeText uk-margin-small-left" onClick={e => this.removeCriteria(e,　"collection")}>解除</a> }
                                                         {this.state.displayAuthor && <br/>}
                                                         {this.state.displayAuthor && "検索対象(作者): " + this.state.displayAuthor}
-                                                        {this.state.displayAuthor && <a className="uk-margin-small-left" onClick={e => this.removeCriteria(e,　"author")}>解除</a> }
+                                                        {this.state.displayAuthor && <a className="badgeText uk-margin-small-left" onClick={e => this.removeCriteria(e,　"author")}>解除</a> }
                                                     </p>
                                                 </div>
                                                 <div className="uk-float-right uk-margin-large-right@s uk-margin-small-right uk-hidden@s">
