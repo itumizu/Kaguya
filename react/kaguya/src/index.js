@@ -24,6 +24,7 @@ ReactDOM.render(
       <Route exact path="/edit" component={Search} />
       <Route exact path="/login" component={Login} />
       <Route exact path="/logout" component={Logout} />
+      <Route exact path="/notice" component={Notice} />
       <Route component={NotFound} />
     </Switch>
   </Router>
