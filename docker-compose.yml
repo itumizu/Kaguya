@@ -48,13 +48,13 @@ services:
       - "dbdata/:/var/lib/postgresql/data"
     env_file: .env
 
-  # pgweb:
-  #   restart: always
-  #   image: donnex/pgweb
-  #   links:
-  #     - postgres:postgres
-  #   ports:
-  #     - '8080:8080'
+  pgweb:
+    restart: always
+    image: donnex/pgweb
+    links:
+      - postgres:postgres
+    ports:
+      - '8080:8080'
   
 volumes:
   dbdata:
