@@ -98,6 +98,12 @@ export default class AuthService {
         })
         .catch((error) => {
             console.log(error)
+            
+            if (error.response.status === 401){
+                this.logout()
+            }
+
+            return false
         });
     }
 
@@ -132,6 +138,7 @@ export default class AuthService {
         })
         .catch((error) => {
             console.log(error)
+            return false
         });
     }
 
