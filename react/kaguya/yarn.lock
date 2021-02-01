@@ -783,7 +783,7 @@
   dependencies:
     regenerator-runtime "^0.13.2"
 
-"@babel/runtime@^7.0.0", "@babel/runtime@^7.1.2", "@babel/runtime@^7.12.1", "@babel/runtime@^7.3.4", "@babel/runtime@^7.4.0", "@babel/runtime@^7.4.2", "@babel/runtime@^7.4.4", "@babel/runtime@^7.5.5", "@babel/runtime@^7.6.3", "@babel/runtime@^7.7.6", "@babel/runtime@^7.8.7":
+"@babel/runtime@^7.0.0", "@babel/runtime@^7.1.2", "@babel/runtime@^7.12.1", "@babel/runtime@^7.3.4", "@babel/runtime@^7.4.2", "@babel/runtime@^7.4.4", "@babel/runtime@^7.5.5", "@babel/runtime@^7.6.3", "@babel/runtime@^7.7.6", "@babel/runtime@^7.8.7":
   version "7.12.5"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.12.5.tgz#410e7e487441e1b360c29be715d870d9b985882e"
   integrity sha512-plcc+hbExy3McchJCEQG3knOsuh3HH+Prx1P6cLIkET/0dLuQDEnrT+s27Axgc9bqfsmNUNHfscgMUdBpC9xfg==
@@ -10765,10 +10765,10 @@ uglify-js@^3.1.4:
   resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-3.10.4.tgz#dd680f5687bc0d7a93b14a3482d16db6eba2bfbb"
   integrity sha512-kBFT3U4Dcj4/pJ52vfjCSfyLyvG9VYYuGYPmrPvAxRw/i7xHiT4VvCev+uiEMcEEiu6UNB6KgWmGtSUYIWScbw==
 
-uikit@^3.6.11:
-  version "3.6.11"
-  resolved "https://registry.yarnpkg.com/uikit/-/uikit-3.6.11.tgz#8c1bd575b7897f2c3dee773539118b42a3af6599"
-  integrity sha512-KL0laSKAKCGT9YeYC1PVkkd+Oa9G7xRS6hD4fnpvh7JUs4P3kV774x2tBAcX34JOLnkMAoc9VrFox16XGokWjA==
+uikit@^3.6.15:
+  version "3.6.15"
+  resolved "https://registry.yarnpkg.com/uikit/-/uikit-3.6.15.tgz#b0f855a3d692d322e148d184e9559e7e868849c9"
+  integrity sha512-HhnPvAcH29mWBa+/PZ184g6JIiGvMbXrJf2Ub/AkosTTo9rygBG6eF/x+5ncVdmj+jsS/tRl8NdvIFcqNgEb0A==
 
 unherit@^1.0.4:
   version "1.1.2"
